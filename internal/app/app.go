@@ -3,6 +3,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -17,15 +18,22 @@ import (
 
 // App is the Bearm application shell.
 type App struct {
-	stdin io.Reader
-	out   io.Writer
-	err   io.Writer
-	info  buildinfo.Info
+	stdin  io.Reader
+	out    io.Writer
+	err    io.Writer
+	info   buildinfo.Info
+	getenv func(string) string
 }
 
 // New creates an application with explicit input and output streams.
 func New(stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) *App {
-	return &App{stdin: stdin, out: stdout, err: stderr, info: info}
+	return &App{
+		stdin:  stdin,
+		out:    stdout,
+		err:    stderr,
+		info:   info,
+		getenv: os.Getenv,
+	}
 }
 
 // Run executes one Bearm invocation and returns a process exit code.
@@ -44,10 +52,32 @@ func (a *App) Run(_ context.Context, argv []string) int {
 }
 
 func (a *App) runCompatibility(args []string) int {
-	profile := resolveProfile(os.Getenv, runtime.GOOS)
+	profile := resolveProfile(a.getenv, runtime.GOOS)
 	request, err := cli.ParseCompatibility(args, profile)
 	if err != nil {
-		fmt.Fprintf(a.err, "rm: %v\n", err)
+		var usageErr *cli.UsageError
+		if errors.As(err, &usageErr) {
+			catalog := i18n.NewCatalog(i18n.ResolveCompatibilityLanguage(a.getenv))
+			switch usageErr.Kind {
+			case "invalid-interactive":
+				fmt.Fprintf(a.err, "rm: %s '%s'\n", catalog.Text(i18n.MessageInvalidInteractive), usageErr.Value)
+			case "unsupported-option":
+				if strings.HasPrefix(usageErr.Option, "--") {
+					fmt.Fprintf(a.err, "rm: %s '%s'\n", catalog.Text(i18n.MessageUnrecognizedOption), usageErr.Option)
+				} else {
+					letter := strings.TrimPrefix(usageErr.Option, "-")
+					if profile == domain.ProfileBSD {
+						fmt.Fprintf(a.err, "rm: %s -- %s\n", catalog.Text(i18n.MessageIllegalOption), letter)
+					} else {
+						fmt.Fprintf(a.err, "rm: %s -- '%s'\n", catalog.Text(i18n.MessageIllegalOption), letter)
+					}
+				}
+			default:
+				fmt.Fprintf(a.err, "rm: %v\n", err)
+			}
+		} else {
+			fmt.Fprintf(a.err, "rm: %v\n", err)
+		}
 		return usageCode(profile)
 	}
 
@@ -61,7 +91,7 @@ func (a *App) runCompatibility(args []string) int {
 	}
 
 	if err := request.Validate(); err != nil {
-		catalog := i18n.NewCatalog(i18n.ResolveCompatibilityLanguage(os.Getenv))
+		catalog := i18n.NewCatalog(i18n.ResolveCompatibilityLanguage(a.getenv))
 		fmt.Fprintf(a.err, "rm: %s\n", catalog.Text(i18n.MessageMissingOperand))
 		return usageCode(profile)
 	}
@@ -70,10 +100,10 @@ func (a *App) runCompatibility(args []string) int {
 }
 
 func (a *App) runNative(args []string) int {
-	catalog := i18n.NewCatalog(i18n.ResolveNativeLanguage(os.Getenv))
+	catalog := i18n.NewCatalog(i18n.ResolveNativeLanguage(a.getenv))
 	request, err := cli.ParseNative(args)
 	if err != nil {
-		if strings.Contains(err.Error(), "unknown") || strings.Contains(err.Error(), "missing native") {
+		if errors.Is(err, cli.ErrUnknownCommand) || errors.Is(err, cli.ErrMissingCommand) {
 			fmt.Fprintf(a.err, "bearm: %s\n", catalog.Text(i18n.MessageUnknownCommand))
 		} else {
 			fmt.Fprintf(a.err, "bearm: %v\n", err)

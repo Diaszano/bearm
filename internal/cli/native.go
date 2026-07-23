@@ -29,10 +29,17 @@ type NativeRequest struct {
 	ConfigOp  string
 }
 
+var (
+	// ErrMissingCommand reports a missing native command.
+	ErrMissingCommand = errors.New("missing native command")
+	// ErrUnknownCommand reports an unknown native command.
+	ErrUnknownCommand = errors.New("unknown native command")
+)
+
 // ParseNative parses Bearm-native command arguments.
 func ParseNative(args []string) (NativeRequest, error) {
 	if len(args) == 0 {
-		return NativeRequest{}, errors.New("missing native command")
+		return NativeRequest{}, ErrMissingCommand
 	}
 
 	request := NativeRequest{Command: NativeCommand(args[0]), Limit: 50}
@@ -57,7 +64,7 @@ func ParseNative(args []string) (NativeRequest, error) {
 		request.ConfigOp = args[1]
 		return request, nil
 	default:
-		return NativeRequest{}, errors.New("unknown native command")
+		return NativeRequest{}, ErrUnknownCommand
 	}
 }
 

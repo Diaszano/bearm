@@ -23,3 +23,26 @@ func TestCatalogEnglishMissingOperand(t *testing.T) {
 		t.Fatalf("Text() = %q", got)
 	}
 }
+
+func TestAllMessagesTranslated(t *testing.T) {
+	t.Parallel()
+
+	messages := []i18n.Message{
+		i18n.MessageUnknownCommand,
+		i18n.MessageMissingOperand,
+		i18n.MessageIllegalOption,
+		i18n.MessageUnrecognizedOption,
+		i18n.MessageInvalidInteractive,
+		i18n.MessageNativeUsage,
+	}
+
+	for _, lang := range []i18n.Language{i18n.LanguagePTBR, i18n.LanguageEN} {
+		catalog := i18n.NewCatalog(lang)
+		for _, msg := range messages {
+			text := catalog.Text(msg)
+			if text == "" {
+				t.Errorf("language %s: message %q is empty", lang, msg)
+			}
+		}
+	}
+}

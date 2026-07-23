@@ -1,4 +1,4 @@
-package app_test
+package app
 
 import (
 	"bytes"
@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Diaszano/bearm/internal/app"
 	"github.com/Diaszano/bearm/internal/buildinfo"
 )
 
@@ -15,7 +14,7 @@ func TestRunVersion(t *testing.T) {
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance := app.New(strings.NewReader(""), &stdout, &stderr, buildinfo.Info{
+	instance := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Info{
 		Version: "1.0.0",
 		Commit:  "abcdef0",
 		Date:    "2026-07-23T12:00:00Z",
@@ -35,7 +34,7 @@ func TestRunRMForceWithoutOperandsReturnsSuccess(t *testing.T) {
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance := app.New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+	instance := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
 
 	code := instance.Run(context.Background(), []string{"rm", "-f"})
 	if code != 0 {
@@ -44,12 +43,21 @@ func TestRunRMForceWithoutOperandsReturnsSuccess(t *testing.T) {
 }
 
 func TestRunRMMissingOperandReturnsGNUFailure(t *testing.T) {
-	t.Setenv("BEARM_COMPAT", "gnu")
-	t.Setenv("LC_ALL", "C")
+	t.Parallel()
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance := app.New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+	instance := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+	instance.getenv = func(key string) string {
+		switch key {
+		case "BEARM_COMPAT":
+			return "gnu"
+		case "LC_ALL":
+			return "C"
+		default:
+			return ""
+		}
+	}
 
 	code := instance.Run(context.Background(), []string{"rm"})
 	if code != 1 {
@@ -61,11 +69,17 @@ func TestRunRMMissingOperandReturnsGNUFailure(t *testing.T) {
 }
 
 func TestRunNativeUnknownCommandUsesPortuguese(t *testing.T) {
-	t.Setenv("BEARM_LANG", "pt-BR")
+	t.Parallel()
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance := app.New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+	instance := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+	instance.getenv = func(key string) string {
+		if key == "BEARM_LANG" {
+			return "pt-BR"
+		}
+		return ""
+	}
 
 	code := instance.Run(context.Background(), []string{"bearm", "unknown"})
 	if code != 2 {
