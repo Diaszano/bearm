@@ -30,3 +30,8 @@ verify: fmt-check vet test test-race
 
 clean:
 	rm -rf bin dist coverage.out coverage.html
+
+.PHONY: snapshot
+
+snapshot:
+	goreleaser release --snapshot --clean
