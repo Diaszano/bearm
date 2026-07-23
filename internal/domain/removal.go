@@ -53,6 +53,8 @@ type RemoveOptions struct {
 	Interactive   InteractiveMode
 	PreserveRoot  PreserveRootMode
 	OneFileSystem bool
+	ShowHelp      bool
+	ShowVersion   bool
 }
 
 // RemoveRequest is a compatibility-mode removal request.
