@@ -30,8 +30,38 @@ func TestRunVersion(t *testing.T) {
 	}
 }
 
-func TestRunUnknownCommand(t *testing.T) {
+func TestRunRMForceWithoutOperandsReturnsSuccess(t *testing.T) {
 	t.Parallel()
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	instance := app.New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+
+	code := instance.Run(context.Background(), []string{"rm", "-f"})
+	if code != 0 {
+		t.Fatalf("Run() code = %d, stderr = %q", code, stderr.String())
+	}
+}
+
+func TestRunRMMissingOperandReturnsGNUFailure(t *testing.T) {
+	t.Setenv("BEARM_COMPAT", "gnu")
+	t.Setenv("LC_ALL", "C")
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	instance := app.New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+
+	code := instance.Run(context.Background(), []string{"rm"})
+	if code != 1 {
+		t.Fatalf("Run() code = %d", code)
+	}
+	if !strings.Contains(stderr.String(), "missing operand") {
+		t.Fatalf("stderr = %q", stderr.String())
+	}
+}
+
+func TestRunNativeUnknownCommandUsesPortuguese(t *testing.T) {
+	t.Setenv("BEARM_LANG", "pt-BR")
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -39,7 +69,7 @@ func TestRunUnknownCommand(t *testing.T) {
 
 	code := instance.Run(context.Background(), []string{"bearm", "unknown"})
 	if code != 2 {
-		t.Fatalf("Run() code = %d, want 2", code)
+		t.Fatalf("Run() code = %d", code)
 	}
 	if !strings.Contains(stderr.String(), "comando desconhecido") { //nolint:misspell // Portuguese translation for command
 		t.Fatalf("stderr = %q", stderr.String())

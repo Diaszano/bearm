@@ -36,7 +36,7 @@ func normalizeLanguage(value string) Language {
 	switch {
 	case strings.HasPrefix(normalized, "pt-br"), normalized == "pt":
 		return LanguagePTBR
-	case strings.HasPrefix(normalized, "en"):
+	case strings.HasPrefix(normalized, "en"), normalized == "c", normalized == "posix":
 		return LanguageEN
 	default:
 		return ""
