@@ -56,6 +56,11 @@ func Reserve(root Root, base string, metadata []byte) (Reservation, error) {
 			return Reservation{}, closeErr
 		}
 
+		if pathExists(targetPath) {
+			_ = os.Remove(infoPath)
+			continue
+		}
+
 		return Reservation{
 			TargetPath: targetPath,
 			InfoPath:   infoPath,

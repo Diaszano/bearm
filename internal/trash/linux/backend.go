@@ -80,7 +80,11 @@ func (b *Backend) Move(
 
 	deletedAt := b.clock()
 	infoPathValue := target.AbsolutePath
-	if resolvedRoot, err := b.resolver.Resolve(target.AbsolutePath); err == nil && resolvedRoot.RelativeInfoPath {
+	resolvedRoot, err := b.resolver.Resolve(target.AbsolutePath)
+	if err != nil {
+		return domain.TrashRecord{}, err
+	}
+	if resolvedRoot.RelativeInfoPath {
 		relative, relErr := filepath.Rel(resolvedRoot.MountPoint, target.AbsolutePath)
 		if relErr != nil {
 			return domain.TrashRecord{}, relErr

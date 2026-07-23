@@ -125,7 +125,10 @@ func ensureRealDirectory(path string, uid int, checkSecurity bool) error {
 	if !os.IsNotExist(err) {
 		return err
 	}
-	return os.MkdirAll(path, 0700)
+	if err := os.MkdirAll(path, 0700); err != nil {
+		return err
+	}
+	return os.Chmod(path, 0700)
 }
 
 func validAdminTrash(path string) bool {

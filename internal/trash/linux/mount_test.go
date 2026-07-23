@@ -83,6 +83,10 @@ func TestRootResolverUsesHomeTrashWhenPerMountIsDisabled(t *testing.T) {
 func TestRootResolverFallsBackToHomeTrashOnUnwritableMount(t *testing.T) {
 	t.Parallel()
 
+	if os.Geteuid() == 0 {
+		t.Skip("Skipping test because root can write to /")
+	}
+
 	root := t.TempDir()
 	resolver := linuxtrash.RootResolver{
 		HomeTrash: filepath.Join(root, "home-trash"),
