@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Diaszano/bearm/internal/domain"
+	"github.com/Diaszano/bearm/internal/trash"
 )
 
 // Backend moves Linux targets into FreeDesktop trash.
@@ -92,9 +93,11 @@ func (b *Backend) Move(
 		infoPathValue = relative
 	}
 
-	reservation, err := Reserve(
-		root,
+	reservation, err := trash.ReserveName(
+		filepath.Join(root.Path, "files"),
+		filepath.Join(root.Path, "info"),
 		filepath.Base(target.AbsolutePath),
+		".trashinfo",
 		RenderTrashInfo(infoPathValue, deletedAt.Local()),
 	)
 	if err != nil {

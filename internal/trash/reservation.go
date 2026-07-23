@@ -1,6 +1,4 @@
-//go:build linux
-
-package linux
+package trash
 
 import (
 	"errors"
@@ -11,33 +9,39 @@ import (
 
 // Reservation owns one exclusively reserved metadata name.
 type Reservation struct {
-	TargetPath string
-	InfoPath   string
-	active     bool
+	TargetPath   string
+	MetadataPath string
+	active       bool
 }
 
-const maxReserveAttempts = 10000
-
-// Reserve atomically reserves a matching files/ and info/ name.
-func Reserve(root Root, base string, metadata []byte) (Reservation, error) {
+// ReserveName reserves a destination by exclusively creating matching metadata.
+func ReserveName(
+	filesDir string,
+	metadataDir string,
+	base string,
+	metadataSuffix string,
+	metadata []byte,
+) (Reservation, error) {
 	if base == "" || base == "." || base == ".." || base == "/" || filepath.Base(base) != base {
 		return Reservation{}, errors.New("invalid trash base name")
 	}
+	if metadataSuffix == "" || filepath.Base(metadataSuffix) != metadataSuffix {
+		return Reservation{}, errors.New("invalid metadata suffix")
+	}
 
-	for suffix := 0; suffix < maxReserveAttempts; suffix++ {
+	for suffix := 0; suffix < 10000; suffix++ {
 		candidate := base
 		if suffix > 0 {
 			candidate = fmt.Sprintf("%s.%d", base, suffix)
 		}
 
-		targetPath := filepath.Join(root.Path, "files", candidate)
-		infoPath := filepath.Join(root.Path, "info", candidate+".trashinfo")
-
+		targetPath := filepath.Join(filesDir, candidate)
+		metadataPath := filepath.Join(metadataDir, candidate+metadataSuffix)
 		if pathExists(targetPath) {
 			continue
 		}
 
-		file, err := os.OpenFile(infoPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+		file, err := os.OpenFile(metadataPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 		if os.IsExist(err) {
 			continue
 		}
@@ -48,23 +52,22 @@ func Reserve(root Root, base string, metadata []byte) (Reservation, error) {
 		writeErr := writeAndSync(file, metadata)
 		closeErr := file.Close()
 		if writeErr != nil {
-			_ = os.Remove(infoPath)
+			_ = os.Remove(metadataPath)
 			return Reservation{}, writeErr
 		}
 		if closeErr != nil {
-			_ = os.Remove(infoPath)
+			_ = os.Remove(metadataPath)
 			return Reservation{}, closeErr
 		}
-
 		if pathExists(targetPath) {
-			_ = os.Remove(infoPath)
+			_ = os.Remove(metadataPath)
 			continue
 		}
 
 		return Reservation{
-			TargetPath: targetPath,
-			InfoPath:   infoPath,
-			active:     true,
+			TargetPath:   targetPath,
+			MetadataPath: metadataPath,
+			active:       true,
 		}, nil
 	}
 
@@ -82,7 +85,7 @@ func (r *Reservation) Rollback() error {
 		return nil
 	}
 	r.active = false
-	err := os.Remove(r.InfoPath)
+	err := os.Remove(r.MetadataPath)
 	if os.IsNotExist(err) {
 		return nil
 	}
