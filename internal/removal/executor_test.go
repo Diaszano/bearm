@@ -273,3 +273,44 @@ func TestExecuteSafetyPolicyRejection(t *testing.T) {
 		t.Fatalf("moved = %#v, want 0", backend.Moved)
 	}
 }
+
+func TestExecuteRejectsTargetInsideResolvedTrashRoot(t *testing.T) {
+	t.Parallel()
+
+	policy, _ := safety.NewPolicy(safety.Config{})
+	backend := &testutil.Backend{}
+	journal := &testutil.Journal{}
+	executor := removal.NewExecutor(
+		backend,
+		journal,
+		policy,
+		removal.NewPrompter(strings.NewReader(""), &bytes.Buffer{}),
+		nil,
+	)
+
+	plan := domain.RemovalPlan{
+		ID:      "operation-1",
+		Request: domain.RemoveRequest{Profile: domain.ProfileGNU},
+		Targets: []domain.PlannedTarget{
+			{
+				InputPath:    "/trash/active-item",
+				AbsolutePath: "/trash/active-item",
+				Kind:         domain.TargetFile,
+			},
+		},
+	}
+
+	result := executor.Execute(context.Background(), plan)
+	if !result.HasFailures() {
+		t.Fatal("HasFailures() = false, want true")
+	}
+	if len(result.Items) != 1 || !strings.Contains(result.Items[0].Err.Error(), "managed trash") {
+		t.Fatalf("Items = %#v, want managed trash failure", result.Items)
+	}
+	if len(backend.Moved) != 0 {
+		t.Fatalf("Moved = %#v, want no move", backend.Moved)
+	}
+	if len(journal.Records) != 0 {
+		t.Fatalf("Records = %#v, want no journal append", journal.Records)
+	}
+}

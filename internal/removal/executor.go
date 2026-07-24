@@ -2,8 +2,11 @@ package removal
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
+	"strings"
 
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/safety"
@@ -101,6 +104,14 @@ func (e *Executor) Execute(ctx context.Context, plan domain.RemovalPlan) domain.
 			})
 			continue
 		}
+		if isEqualOrDescendant(target.AbsolutePath, destination.Root) {
+			result.Items = append(result.Items, domain.ItemResult{
+				Path:   target.InputPath,
+				Status: domain.ItemFailed,
+				Err:    errors.New("target is inside Bearm-managed trash"),
+			})
+			continue
+		}
 		record, err := e.backend.Move(ctx, target, destination, plan.ID)
 		if err != nil {
 			result.Items = append(result.Items, domain.ItemResult{
@@ -129,4 +140,14 @@ func (e *Executor) Execute(ctx context.Context, plan domain.RemovalPlan) domain.
 	}
 
 	return result
+}
+
+func isEqualOrDescendant(path, root string) bool {
+	cleanPath := filepath.Clean(path)
+	cleanRoot := filepath.Clean(root)
+	if cleanPath == cleanRoot {
+		return true
+	}
+	prefix := cleanRoot + string(filepath.Separator)
+	return strings.HasPrefix(cleanPath, prefix)
 }
