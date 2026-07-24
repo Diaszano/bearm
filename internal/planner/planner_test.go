@@ -69,7 +69,16 @@ func TestPlanUsesFastPathForRecursiveDirectory(t *testing.T) {
 func TestPlanRequiresWalkForInteractiveDirectory(t *testing.T) {
 	t.Parallel()
 
-	directory := t.TempDir()
+	root := t.TempDir()
+	directory := filepath.Join(root, "dir")
+	if err := os.Mkdir(directory, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	file := filepath.Join(directory, "file.txt")
+	if err := os.WriteFile(file, []byte("data"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
 	policy, _ := safety.NewPolicy(safety.Config{})
 	instance := planner.New(policy, func() (string, error) { return "operation-1", nil })
 
@@ -84,8 +93,14 @@ func TestPlanRequiresWalkForInteractiveDirectory(t *testing.T) {
 	if len(failures) != 0 {
 		t.Fatalf("failures = %#v", failures)
 	}
-	if !plan.Targets[0].RequiresWalk {
-		t.Fatal("RequiresWalk = false, want true")
+	if len(plan.Targets) != 2 {
+		t.Fatalf("len(Targets) = %d, want 2", len(plan.Targets))
+	}
+	if plan.Targets[0].AbsolutePath != file {
+		t.Errorf("Target 0 = %s, want %s", plan.Targets[0].AbsolutePath, file)
+	}
+	if plan.Targets[1].AbsolutePath != directory {
+		t.Errorf("Target 1 = %s, want %s", plan.Targets[1].AbsolutePath, directory)
 	}
 }
 

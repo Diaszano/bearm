@@ -10,12 +10,15 @@ import (
 	"runtime"
 	"strings"
 
+	"path/filepath"
+
 	"github.com/Diaszano/bearm/internal/buildinfo"
 	"github.com/Diaszano/bearm/internal/cli"
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/i18n"
 	"github.com/Diaszano/bearm/internal/id"
 	"github.com/Diaszano/bearm/internal/planner"
+	"github.com/Diaszano/bearm/internal/platform"
 	"github.com/Diaszano/bearm/internal/removal"
 	"github.com/Diaszano/bearm/internal/safety"
 )
@@ -37,7 +40,27 @@ func New(stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) *App {
 		home = os.TempDir()
 	}
 	backend := newPlatformBackend(home)
-	policy, _ := safety.NewPolicy(safety.Config{})
+
+	dirs, _ := platform.ResolveDirs(os.Getenv, home, runtime.GOOS)
+
+	var homeTrash string
+	if runtime.GOOS == "darwin" {
+		homeTrash = filepath.Join(home, ".Trash")
+	} else {
+		dataHome := os.Getenv("XDG_DATA_HOME")
+		if !filepath.IsAbs(dataHome) {
+			dataHome = filepath.Join(home, ".local", "share")
+		}
+		homeTrash = filepath.Join(dataHome, "Trash")
+	}
+
+	policy, _ := safety.NewPolicy(safety.Config{
+		HardProtectedRoots: []string{
+			dirs.ConfigRoot,
+			dirs.StateRoot,
+			homeTrash,
+		},
+	})
 	journal := &discardJournal{}
 	return NewWithDependencies(stdin, stdout, stderr, info, Dependencies{
 		Backend: backend,

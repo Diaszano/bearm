@@ -48,6 +48,7 @@ func (p *Planner) Plan(
 	}
 	failures := make([]domain.ItemResult, 0)
 	seen := make(map[string]struct{})
+	seenOperands := make(map[string]struct{})
 
 	for _, operand := range request.Operands {
 		if err := ctx.Err(); err != nil {
@@ -62,12 +63,15 @@ func (p *Planner) Plan(
 			failures = append(failures, failed(operand, err))
 			continue
 		}
-		absolute = filepath.Clean(absolute)
+
+		if _, exists := seenOperands[absolute]; exists {
+			continue
+		}
+		seenOperands[absolute] = struct{}{}
 
 		if _, exists := seen[absolute]; exists {
 			continue
 		}
-		seen[absolute] = struct{}{}
 
 		if err := p.policy.Check(absolute); err != nil {
 			failures = append(failures, failed(operand, err))
@@ -118,13 +122,70 @@ func (p *Planner) Plan(
 			continue
 		}
 
-		plan.Targets = append(plan.Targets, domain.PlannedTarget{
-			InputPath:    operand,
-			AbsolutePath: absolute,
-			Kind:         kind,
-			DeviceID:     deviceID,
-			RequiresWalk: requiresWalk(kind, request.Options),
-		})
+		reqWalk := requiresWalk(kind, request.Options)
+		if reqWalk {
+			descendants, err := WalkDepthFirst(absolute, deviceID, request.Options.OneFileSystem)
+			if err != nil {
+				failures = append(failures, failed(operand, err))
+				continue
+			}
+			for _, desc := range descendants {
+				if _, exists := seen[desc]; exists {
+					continue
+				}
+				seen[desc] = struct{}{}
+
+				descInfo, err := os.Lstat(desc)
+				if err != nil {
+					failures = append(failures, failed(desc, err))
+					continue
+				}
+				descKind := classify(descInfo)
+				descDevice, err := platform.DeviceID(desc)
+				if err != nil {
+					failures = append(failures, failed(desc, err))
+					continue
+				}
+
+				if err := p.policy.Check(desc); err != nil {
+					failures = append(failures, failed(desc, err))
+					continue
+				}
+
+				if err := ValidatePreserveRootAll(
+					desc,
+					descKind,
+					request.Options.PreserveRoot,
+					platform.DeviceID,
+				); err != nil {
+					failures = append(failures, failed(desc, err))
+					continue
+				}
+
+				rel, relErr := filepath.Rel(absolute, desc)
+				descInputPath := operand
+				if relErr == nil && rel != "." {
+					descInputPath = filepath.Join(operand, rel)
+				}
+
+				plan.Targets = append(plan.Targets, domain.PlannedTarget{
+					InputPath:    descInputPath,
+					AbsolutePath: desc,
+					Kind:         descKind,
+					DeviceID:     descDevice,
+					RequiresWalk: false,
+				})
+			}
+		} else {
+			seen[absolute] = struct{}{}
+			plan.Targets = append(plan.Targets, domain.PlannedTarget{
+				InputPath:    operand,
+				AbsolutePath: absolute,
+				Kind:         kind,
+				DeviceID:     deviceID,
+				RequiresWalk: false,
+			})
+		}
 	}
 
 	return plan, failures
