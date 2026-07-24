@@ -14,30 +14,63 @@ import (
 	"github.com/Diaszano/bearm/internal/cli"
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/i18n"
+	"github.com/Diaszano/bearm/internal/id"
+	"github.com/Diaszano/bearm/internal/planner"
+	"github.com/Diaszano/bearm/internal/removal"
+	"github.com/Diaszano/bearm/internal/safety"
 )
 
 // App is the Bearm application shell.
 type App struct {
-	stdin  io.Reader
-	out    io.Writer
-	err    io.Writer
-	info   buildinfo.Info
-	getenv func(string) string
+	stdin        io.Reader
+	out          io.Writer
+	err          io.Writer
+	info         buildinfo.Info
+	getenv       func(string) string
+	dependencies Dependencies
 }
 
-// New creates an application with explicit input and output streams.
+// New creates an application with default removal infrastructure.
 func New(stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) *App {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		home = os.TempDir()
+	}
+	backend := newPlatformBackend(home)
+	policy, _ := safety.NewPolicy(safety.Config{})
+	journal := &discardJournal{}
+	return NewWithDependencies(stdin, stdout, stderr, info, Dependencies{
+		Backend: backend,
+		Journal: journal,
+		Policy:  policy,
+	})
+}
+
+type discardJournal struct{}
+
+func (d *discardJournal) Append(_ context.Context, _ []domain.TrashRecord) error {
+	return nil
+}
+
+// NewWithDependencies creates an application with explicit infrastructure.
+func NewWithDependencies(
+	stdin io.Reader,
+	stdout, stderr io.Writer,
+	info buildinfo.Info,
+	dependencies Dependencies,
+) *App {
 	return &App{
-		stdin:  stdin,
-		out:    stdout,
-		err:    stderr,
-		info:   info,
-		getenv: os.Getenv,
+		stdin:        stdin,
+		out:          stdout,
+		err:          stderr,
+		info:         info,
+		getenv:       os.Getenv,
+		dependencies: dependencies,
 	}
 }
 
 // Run executes one Bearm invocation and returns a process exit code.
-func (a *App) Run(_ context.Context, argv []string) int {
+func (a *App) Run(ctx context.Context, argv []string) int {
 	invocation, err := cli.ResolveInvocation(argv)
 	if err != nil {
 		fmt.Fprintln(a.err, err)
@@ -45,13 +78,13 @@ func (a *App) Run(_ context.Context, argv []string) int {
 	}
 
 	if invocation.Mode == cli.ModeCompatibility {
-		return a.runCompatibility(invocation.Args)
+		return a.runCompatibility(ctx, invocation.Args)
 	}
 
 	return a.runNative(invocation.Args)
 }
 
-func (a *App) runCompatibility(args []string) int {
+func (a *App) runCompatibility(ctx context.Context, args []string) int {
 	profile := resolveProfile(a.getenv, runtime.GOOS)
 	request, err := cli.ParseCompatibility(args, profile)
 	if err != nil {
@@ -96,7 +129,32 @@ func (a *App) runCompatibility(args []string) int {
 		return usageCode(profile)
 	}
 
-	return 0
+	if len(request.Operands) == 0 {
+		return 0
+	}
+	if a.dependencies.Backend == nil || a.dependencies.Journal == nil || a.dependencies.Policy == nil {
+		fmt.Fprintln(a.err, "rm: removal infrastructure is not configured")
+		return 1
+	}
+
+	instance := planner.New(a.dependencies.Policy, id.New)
+	plan, planningFailures := instance.Plan(ctx, request)
+	executor := removal.NewExecutor(
+		a.dependencies.Backend,
+		a.dependencies.Journal,
+		a.dependencies.Policy,
+		removal.NewPrompter(a.stdin, a.err),
+		a.out,
+	)
+	result := executor.Execute(ctx, plan)
+	result.Items = append(planningFailures, result.Items...)
+
+	for _, item := range result.Items {
+		if item.Status == domain.ItemFailed && item.Err != nil {
+			fmt.Fprintf(a.err, "rm: %s: %v\n", item.Path, item.Err)
+		}
+	}
+	return result.ExitCode(profile)
 }
 
 func (a *App) runNative(args []string) int {

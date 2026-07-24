@@ -3,10 +3,14 @@ package app
 import (
 	"bytes"
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/Diaszano/bearm/internal/buildinfo"
+	"github.com/Diaszano/bearm/internal/safety"
+	"github.com/Diaszano/bearm/internal/testutil"
 )
 
 func TestRunVersion(t *testing.T) {
@@ -87,5 +91,40 @@ func TestRunNativeUnknownCommandUsesPortuguese(t *testing.T) {
 	}
 	if !strings.Contains(stderr.String(), "comando desconhecido") { //nolint:misspell // Portuguese translation for command
 		t.Fatalf("stderr = %q", stderr.String())
+	}
+}
+
+func TestRunCompatibilityMovesPlannedTarget(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	source := filepath.Join(root, "file.txt")
+	if err := os.WriteFile(source, []byte("data"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	policy, err := safety.NewPolicy(safety.Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend := &testutil.Backend{}
+	journal := &testutil.Journal{}
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	instance := NewWithDependencies(
+		strings.NewReader(""),
+		&stdout,
+		&stderr,
+		buildinfo.Current(),
+		Dependencies{Backend: backend, Journal: journal, Policy: policy},
+	)
+
+	code := instance.Run(context.Background(), []string{"rm", source})
+	if code != 0 {
+		t.Fatalf("Run() code = %d, stderr = %q", code, stderr.String())
+	}
+	if len(backend.Moved) != 1 || backend.Moved[0] != source {
+		t.Fatalf("Moved = %#v", backend.Moved)
 	}
 }
