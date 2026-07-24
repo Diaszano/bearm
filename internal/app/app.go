@@ -15,6 +15,7 @@ import (
 
 	"github.com/Diaszano/bearm/internal/buildinfo"
 	"github.com/Diaszano/bearm/internal/cli"
+	"github.com/Diaszano/bearm/internal/config"
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/i18n"
 	"github.com/Diaszano/bearm/internal/id"
@@ -42,7 +43,8 @@ func New(stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) *App {
 	if err != nil {
 		home = os.TempDir()
 	}
-	backend := newPlatformBackend(home)
+	defaultConfig := config.Default()
+	backend := newPlatformBackend(home, defaultConfig)
 
 	dirs, _ := platform.ResolveDirs(os.Getenv, home, runtime.GOOS)
 
@@ -70,6 +72,8 @@ func New(stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) *App {
 		Journal:    journalRepo,
 		Repository: journalRepo,
 		Policy:     policy,
+		Config:     defaultConfig,
+		ConfigPath: filepath.Join(dirs.ConfigRoot, "config.toml"),
 	})
 }
 
@@ -112,7 +116,11 @@ func (a *App) Run(ctx context.Context, argv []string) int {
 }
 
 func (a *App) runCompatibility(ctx context.Context, args []string) int {
-	profile := resolveProfile(a.getenv, runtime.GOOS)
+	profile := resolveConfiguredProfile(
+		a.dependencies.Config.CompatibilityProfile,
+		a.getenv,
+		runtime.GOOS,
+	)
 	request, err := cli.ParseCompatibility(args, profile)
 	if err != nil {
 		var usageErr *cli.UsageError
@@ -201,6 +209,24 @@ func (a *App) runNative(ctx context.Context, args []string) int {
 		return 0
 	}
 
+	if request.Command == cli.CommandConfig {
+		switch request.ConfigOp {
+		case "path":
+			fmt.Fprintln(a.out, a.dependencies.ConfigPath)
+			return 0
+		case "check":
+			if err := a.dependencies.Config.Validate(); err != nil {
+				fmt.Fprintf(a.err, "bearm: configuração inválida: %v\n", err)
+				return 3
+			}
+			fmt.Fprintln(a.out, "Configuração válida.")
+			return 0
+		default:
+			fmt.Fprintln(a.err, "bearm: operação de configuração inválida")
+			return 2
+		}
+	}
+
 	if a.dependencies.Repository == nil {
 		fmt.Fprintln(a.err, "bearm: repositório de histórico não configurado")
 		return 1
@@ -277,8 +303,13 @@ func (a *App) runRestore(ctx context.Context, request cli.NativeRequest) int {
 		return 1
 	}
 
+	policy := restore.CollisionPolicy(a.dependencies.Config.Restore.CollisionPolicy)
+	if policy == restore.CollisionOverwrite {
+		fmt.Fprintln(a.err, "bearm: overwrite exige confirmação explícita e não é usado por restore padrão")
+		return 2
+	}
 	service := restore.NewService(a.dependencies.Repository, time.Now)
-	results := service.Restore(ctx, records, restore.CollisionFail)
+	results := service.Restore(ctx, records, policy)
 	return renderNativeResults(a.out, a.err, results)
 }
 
@@ -344,6 +375,24 @@ func renderNativeResults(stdout, stderr io.Writer, results []domain.ItemResult) 
 		return 1
 	}
 	return 0
+}
+
+func resolveConfiguredProfile(
+	configured string,
+	getenv func(string) string,
+	goos string,
+) domain.CompatibilityProfile {
+	if configured != "" && configured != "auto" {
+		switch configured {
+		case "gnu":
+			return domain.ProfileGNU
+		case "bsd":
+			return domain.ProfileBSD
+		case "posix":
+			return domain.ProfilePOSIX
+		}
+	}
+	return resolveProfile(getenv, goos)
 }
 
 func resolveProfile(getenv func(string) string, goos string) domain.CompatibilityProfile {

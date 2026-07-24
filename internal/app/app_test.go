@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Diaszano/bearm/internal/buildinfo"
+	"github.com/Diaszano/bearm/internal/config"
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/journal"
 	"github.com/Diaszano/bearm/internal/safety"
@@ -214,5 +215,55 @@ func TestRunNativeRestoreLast(t *testing.T) {
 	}
 	if _, err := os.Stat(original); err != nil {
 		t.Fatalf("restored path missing: %v", err)
+	}
+}
+
+func TestRunConfigPath(t *testing.T) {
+	t.Parallel()
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	instance := NewWithDependencies(
+		strings.NewReader(""),
+		&stdout,
+		&stderr,
+		buildinfo.Current(),
+		Dependencies{
+			Config:     config.Default(),
+			ConfigPath: "/home/dias/.config/bearm/config.toml",
+		},
+	)
+
+	code := instance.Run(context.Background(), []string{"bearm", "config", "path"})
+	if code != 0 {
+		t.Fatalf("Run() code = %d, stderr = %q", code, stderr.String())
+	}
+	if strings.TrimSpace(stdout.String()) != "/home/dias/.config/bearm/config.toml" {
+		t.Fatalf("stdout = %q", stdout.String())
+	}
+}
+
+func TestRunConfigCheck(t *testing.T) {
+	t.Parallel()
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	instance := NewWithDependencies(
+		strings.NewReader(""),
+		&stdout,
+		&stderr,
+		buildinfo.Current(),
+		Dependencies{
+			Config:     config.Default(),
+			ConfigPath: "/tmp/config.toml",
+		},
+	)
+
+	code := instance.Run(context.Background(), []string{"bearm", "config", "check"})
+	if code != 0 {
+		t.Fatalf("Run() code = %d, stderr = %q", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "Configuração válida") {
+		t.Fatalf("stdout = %q", stdout.String())
 	}
 }
