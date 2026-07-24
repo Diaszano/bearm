@@ -39,5 +39,20 @@ archives:
 checksum:
   name_template: checksums.txt
 
+homebrew_casks:
+  - name: bearm
+    repository:
+      owner: Diaszano
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: "https://github.com/Diaszano/bearm"
+    description: "Safe native replacement for Unix rm with restore support"
+    license: "MIT"
+    binaries:
+      - bearm
+    manpages:
+      - man/bearm.1
+
 changelog:
   use: github-native

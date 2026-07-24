@@ -1,0 +1,243 @@
+.TH BEARM 1 "July 2026" "Bearm" "User Commands"
+.SH NAME
+bearm \- remove safely and restore confidently
+.SH SYNOPSIS
+.B bearm rm
+.RI [ OPTIONS ] " TARGET" ...
+.br
+.B bearm list
+.RI [ \-\-limit " N" ]
+.RI [ \-\-json ]
+.br
+.B bearm restore
+.IR ITEM_ID ...
+.br
+.B bearm restore
+.BR \-\-operation " " OPERATION_ID
+.br
+.B bearm restore \-\-last
+.br
+.B bearm purge
+.IR ITEM_ID ...
+.RI [ \-\-yes ]
+.br
+.B bearm doctor
+.RI [ \-\-json ]
+.br
+.B bearm config
+.BR path | check
+.br
+.B bearm version
+.SH DESCRIPTION
+Bearm is a native safe replacement for Unix
+.BR rm (1).
+Compatibility-mode removal moves files, symlinks, and directories into an
+operating-system trash location instead of permanently deleting them.
+Native commands list, restore, purge, and diagnose Bearm-managed trash items.
+.PP
+Bearm uses direct filesystem operations, performs no runtime network access,
+and sends no telemetry.
+.SH COMPATIBILITY MODE
+Compatibility mode is selected by the
+.B rm
+subcommand or when the executable basename is
+.BR rm .
+Linux selects the GNU profile and macOS selects the BSD profile by default.
+.B BEARM_COMPAT
+may select
+.BR gnu ,
+.BR bsd ,
+or
+.BR posix .
+.PP
+GNU parsing accepts options after operands until
+.BR \-\- .
+BSD and POSIX parsing stop at the first operand.
+Force and interaction options are applied from left to right.
+Successful operations are silent unless verbose mode is active.
+.SH NATIVE COMMANDS
+.TP
+.B list
+List active trash items. Use
+.B \-\-limit
+to bound text or JSON results and
+.B \-\-json
+for machine-readable records.
+.TP
+.B restore
+Restore item IDs,
+.B \-\-operation
+to restore an operation, or
+.B \-\-last
+to restore the latest active operation.
+.TP
+.B purge
+Permanently delete selected active items. Purge requires an interactive
+confirmation or
+.BR \-\-yes .
+.TP
+.B doctor
+Report incomplete journal data or missing active trash items. Use
+.B \-\-json
+for machine-readable findings.
+.TP
+.B config path
+Print the active TOML configuration path.
+.TP
+.B config check
+Validate the active configuration.
+.TP
+.B version
+Print Bearm version, commit, and build date.
+.SH OPTIONS
+.TP
+.BR \-f ", " \-\-force
+Ignore nonexistent targets and disable earlier interactive behavior.
+.TP
+.BR \-i ", " \-\-interactive=always
+Prompt before each logical target.
+.TP
+.BR \-I ", " \-\-interactive=once
+Prompt once for recursive or large requests.
+.TP
+.B \-\-interactive=never
+Disable prompting in the GNU profile.
+.TP
+.BR \-r ", " \-R ", " \-\-recursive
+Permit directory removal.
+.TP
+.BR \-d ", " \-\-dir ", " \-\-directory
+Permit removal of empty directories without recursive mode.
+.TP
+.BR \-v ", " \-\-verbose
+Print each successful logical removal.
+.TP
+.B \-\-one\-file\-system
+Do not cross mount boundaries when GNU-profile traversal is required.
+.TP
+.BR \-\-preserve\-root [ =all ]
+Protect the system root, or protect directory operands on a device different
+from their parent.
+.TP
+.B \-\-no\-preserve\-root
+Disable GNU compatibility root preservation. Bearm hard protection for
+.B /
+remains active.
+.TP
+.B \-\-
+End option parsing.
+.SH CONFIGURATION
+Bearm loads defaults, strict TOML configuration, then environment overrides.
+Unknown TOML fields and invalid values are rejected before filesystem
+mutation.
+.PP
+The complete version 1 schema and precedence rules are documented in
+.IR docs/configuration.md .
+.SH ENVIRONMENT
+.TP
+.B BEARM_LANG
+Native language:
+.B pt-BR
+or
+.BR en .
+.TP
+.B BEARM_COMPAT
+Compatibility profile:
+.BR gnu ,
+.BR bsd ,
+or
+.BR posix .
+.TP
+.B BEARM_TRASH
+Absolute custom trash root.
+.TP
+.B BEARM_TRASH_PER_MOUNT
+Boolean Linux per-mount routing override.
+.TP
+.B BEARM_LOG
+Local diagnostic level:
+.B error
+or
+.BR debug .
+.TP
+.BR BEARM_CONFIG_HOME ", " BEARM_STATE_HOME ", " BEARM_DATA_HOME
+Absolute Bearm directory overrides.
+.TP
+.BR XDG_CONFIG_HOME ", " XDG_STATE_HOME ", " XDG_DATA_HOME
+Linux base-directory overrides.
+.TP
+.BR LC_ALL ", " LC_MESSAGES ", " LANG
+Compatibility diagnostic locale precedence.
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/bearm/config.toml
+Linux configuration, falling back to
+.IR $HOME/.config/bearm/config.toml .
+.TP
+.I $XDG_STATE_HOME/bearm/journal.jsonl
+Linux journal, falling back to
+.IR $HOME/.local/state/bearm/journal.jsonl .
+.TP
+.I $XDG_DATA_HOME/Trash
+Linux home trash, falling back to
+.IR $HOME/.local/share/Trash .
+.TP
+.I $HOME/Library/Application Support/Bearm/config.toml
+macOS configuration.
+.TP
+.I $HOME/Library/Application Support/Bearm/state/journal.jsonl
+macOS journal.
+.TP
+.I $HOME/.Trash
+macOS home-volume Trash.
+.SH EXIT STATUS
+Compatibility mode returns 0 for success, 1 for GNU usage or operational
+failure, and 64 for BSD usage failure.
+.PP
+Native mode returns 0 for success, 1 for an operational failure, 2 for invalid
+usage, and 3 for invalid configuration or directory overrides.
+.SH SAFETY
+Bearm rejects the system root, dot and dot-dot operands, its configuration,
+state, data, and resolved trash roots. Final symlink operands are moved as
+symlinks and their destinations are not followed.
+.PP
+Destination names and metadata are reserved with exclusive creation. A custom
+trash move that crosses filesystems fails without copying or deleting the
+source. Only native
+.B purge
+permanently deletes Bearm-managed trash items.
+.SH LIMITATIONS
+Windows is not supported. Finder Put Back metadata is not guaranteed.
+Cross-filesystem copying into custom trash is unsupported. BSD
+.B \-P
+and
+.B \-W
+semantics are not implemented. Trash is not a backup.
+.SH EXAMPLES
+.PP
+Move a file to trash:
+.PP
+.EX
+bearm rm report.txt
+.EE
+.PP
+Move a directory without ordinary descendant traversal:
+.PP
+.EX
+bearm rm -rf build
+.EE
+.PP
+Restore the latest active operation:
+.PP
+.EX
+bearm restore --last
+.EE
+.PP
+Create a reversible shell alias:
+.PP
+.EX
+alias rm='bearm rm'
+.EE
+.SH SEE ALSO
+.BR rm (1),
+.BR mv (1)
