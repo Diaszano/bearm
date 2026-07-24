@@ -12,17 +12,24 @@ import (
 type Config struct {
 	HardProtectedRoots []string
 	AllowedRoots       []string
+	Patterns           *PatternMatcher
+	InspectDescendants bool
 }
 
 // Policy validates lexical absolute target paths.
 type Policy struct {
-	hardProtected []string
-	allowed       []string
+	hardProtected      []string
+	allowed            []string
+	patterns           *PatternMatcher
+	inspectDescendants bool
 }
 
 // NewPolicy validates and creates a safety policy.
 func NewPolicy(config Config) (*Policy, error) {
-	policy := &Policy{}
+	policy := &Policy{
+		patterns:           config.Patterns,
+		inspectDescendants: config.InspectDescendants,
+	}
 	var err error
 
 	policy.hardProtected, err = normalizeRoots(config.HardProtectedRoots)
@@ -57,6 +64,10 @@ func (p *Policy) Check(path string) error {
 		}
 	}
 
+	if p.patterns != nil && p.patterns.Matches(cleaned) {
+		return errors.New("path is protected by configured pattern")
+	}
+
 	if len(p.allowed) == 0 {
 		return nil
 	}
@@ -67,6 +78,11 @@ func (p *Policy) Check(path string) error {
 	}
 
 	return errors.New("path is outside allowed roots")
+}
+
+// InspectDescendants reports whether recursive planning must inspect protected descendants.
+func (p *Policy) InspectDescendants() bool {
+	return p.inspectDescendants
 }
 
 func normalizeRoots(values []string) ([]string, error) {

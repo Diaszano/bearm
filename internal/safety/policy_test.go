@@ -79,3 +79,16 @@ func TestPolicyDoesNotResolveFinalSymlinkLexically(t *testing.T) {
 		t.Fatalf("Check() error = %v", err)
 	}
 }
+
+func TestPolicyInspectDescendants(t *testing.T) {
+	t.Parallel()
+
+	policy, err := safety.NewPolicy(safety.Config{InspectDescendants: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !policy.InspectDescendants() {
+		t.Fatal("InspectDescendants() = false, want true")
+	}
+}
