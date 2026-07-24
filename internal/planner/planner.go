@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/Diaszano/bearm/internal/domain"
@@ -85,6 +86,13 @@ func (p *Planner) Plan(
 			}
 			failures = append(failures, failed(operand, err))
 			continue
+		}
+
+		if strings.HasSuffix(operand, "/") || strings.HasSuffix(operand, string(filepath.Separator)) {
+			if _, err := os.Lstat(operand); err != nil {
+				failures = append(failures, failed(operand, err))
+				continue
+			}
 		}
 
 		kind := classify(info)

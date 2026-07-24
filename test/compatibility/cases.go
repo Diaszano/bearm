@@ -92,5 +92,56 @@ func CoreCases() []Case {
 				return os.WriteFile(filepath.Join(root, "file.txt"), []byte("data"), 0o600)
 			},
 		},
+		{
+			Name:       "filename with spaces and unicode",
+			Args:       []string{"ação com espaço.txt"},
+			CompareOut: true,
+			CompareErr: true,
+			Setup: func(root string) error {
+				return os.WriteFile(filepath.Join(root, "ação com espaço.txt"), []byte("data"), 0o600)
+			},
+		},
+		{
+			Name:       "dangling symlink",
+			Args:       []string{"dangling"},
+			CompareOut: true,
+			CompareErr: true,
+			Setup: func(root string) error {
+				return os.Symlink(filepath.Join(root, "missing"), filepath.Join(root, "dangling"))
+			},
+		},
+		{
+			Name:       "trailing slash on file",
+			Args:       []string{"file.txt/"},
+			CompareOut: true,
+			CompareErr: false,
+			Setup: func(root string) error {
+				return os.WriteFile(filepath.Join(root, "file.txt"), []byte("data"), 0o600)
+			},
+		},
+		{
+			Name:       "empty directory with d",
+			Args:       []string{"-d", "empty"},
+			CompareOut: true,
+			CompareErr: false,
+			Setup: func(root string) error {
+				return os.Mkdir(filepath.Join(root, "empty"), 0o700)
+			},
+		},
+		{
+			Name:       "interactive once four operands declined",
+			Args:       []string{"-I", "a", "b", "c", "d"},
+			Stdin:      "n\n",
+			CompareOut: true,
+			CompareErr: false,
+			Setup: func(root string) error {
+				for _, name := range []string{"a", "b", "c", "d"} {
+					if err := os.WriteFile(filepath.Join(root, name), []byte(name), 0o600); err != nil {
+						return err
+					}
+				}
+				return nil
+			},
+		},
 	}
 }
