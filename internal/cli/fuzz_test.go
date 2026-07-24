@@ -45,7 +45,7 @@ func FuzzParseNative(f *testing.F) {
 		f.Add(seed)
 	}
 
-	f.Fuzz(func(t *testing.T, input string) {
+	f.Fuzz(func(_ *testing.T, input string) {
 		_, _ = cli.ParseNative(strings.Fields(input))
 	})
 }

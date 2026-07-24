@@ -9,12 +9,18 @@ import (
 type NativeCommand string
 
 const (
+	// CommandVersion prints Bearm build information.
 	CommandVersion NativeCommand = "version"
-	CommandList    NativeCommand = "list"
+	// CommandList lists active trash items.
+	CommandList NativeCommand = "list"
+	// CommandRestore restores selected trash items.
 	CommandRestore NativeCommand = "restore"
-	CommandPurge   NativeCommand = "purge"
-	CommandDoctor  NativeCommand = "doctor"
-	CommandConfig  NativeCommand = "config"
+	// CommandPurge permanently deletes selected trash items.
+	CommandPurge NativeCommand = "purge"
+	// CommandDoctor diagnoses journal and trash consistency.
+	CommandDoctor NativeCommand = "doctor"
+	// CommandConfig inspects or validates Bearm configuration.
+	CommandConfig NativeCommand = "config"
 )
 
 // NativeRequest contains parsed native command arguments.

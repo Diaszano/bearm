@@ -35,9 +35,35 @@ archives:
       {{- .Version }}_
       {{- .Os }}_
       {{- .Arch }}
+    files:
+      - LICENSE
+      - README.md
+      - man/bearm.1
 
 checksum:
   name_template: checksums.txt
+
+sboms:
+  - artifacts: archive
+
+release:
+  prerelease: auto
+
+source:
+  enabled: true
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.sigstore.json"
+    args:
+      - sign-blob
+      - "--bundle=${signature}"
+      - "${artifact}"
+      - --yes
 
 homebrew_casks:
   - name: bearm

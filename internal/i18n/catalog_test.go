@@ -10,7 +10,7 @@ func TestCatalogPortugueseUnknownCommand(t *testing.T) {
 	t.Parallel()
 
 	catalog := i18n.NewCatalog(i18n.LanguagePTBR)
-	if got := catalog.Text(i18n.MessageUnknownCommand); got != "comando desconhecido" {
+	if got := catalog.Text(i18n.MessageUnknownCommand); got != "comando desconhecido" { //nolint:misspell // Portuguese.
 		t.Fatalf("Text() = %q", got)
 	}
 }

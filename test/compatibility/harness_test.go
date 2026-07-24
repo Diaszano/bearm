@@ -2,6 +2,7 @@ package compatibility
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -89,8 +90,8 @@ func runCase(t *testing.T, binary string, bearm bool, testCase Case) processResu
 
 	code := 0
 	if err := command.Run(); err != nil {
-		exitErr, ok := err.(*exec.ExitError)
-		if !ok {
+		var exitErr *exec.ExitError
+		if !errors.As(err, &exitErr) {
 			t.Fatalf("run %s: %v", binary, err)
 		}
 		code = exitErr.ExitCode()

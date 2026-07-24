@@ -22,7 +22,6 @@ func TestMain(m *testing.M) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	defer os.RemoveAll(buildDir)
 
 	bearmBinary = filepath.Join(buildDir, "bearm")
 	command := exec.Command("go", "build", "-trimpath", "-o", bearmBinary, "./cmd/bearm")
@@ -30,11 +29,11 @@ func TestMain(m *testing.M) {
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
 	if err := command.Run(); err != nil {
-		os.RemoveAll(buildDir)
+		_ = os.RemoveAll(buildDir)
 		os.Exit(1)
 	}
 
 	code := m.Run()
-	os.RemoveAll(buildDir)
+	_ = os.RemoveAll(buildDir)
 	os.Exit(code)
 }

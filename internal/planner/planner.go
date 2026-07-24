@@ -192,7 +192,9 @@ func directoryEmpty(path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer directory.Close()
+	defer func() {
+		_ = directory.Close()
+	}()
 
 	_, err = directory.Readdirnames(1)
 	if errors.Is(err, io.EOF) {

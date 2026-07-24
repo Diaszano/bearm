@@ -38,11 +38,12 @@ jobs:
         with:
           go-version: stable
           cache: true
+      - uses: anchore/sbom-action/download-syft@v0
       - uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
           version: latest
-          args: release --snapshot --clean
+          args: release --snapshot --clean --skip=sign
 
   linux-backend:
     runs-on: ubuntu-latest
@@ -86,4 +87,17 @@ jobs:
           cache: true
       - run: go test ./internal/cli ./internal/journal -run '^$' -bench . -benchmem
 
+  acceptance:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: true
+      - run: ./scripts/acceptance.sh
 

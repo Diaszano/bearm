@@ -27,12 +27,12 @@ type Catalog struct {
 func NewCatalog(language Language) Catalog {
 	if language == LanguagePTBR {
 		return Catalog{messages: map[Message]string{
-			MessageUnknownCommand:     "comando desconhecido",
+			MessageUnknownCommand:     "comando desconhecido", //nolint:misspell // "comando" is Portuguese.
 			MessageMissingOperand:     "operando ausente",
 			MessageIllegalOption:      "opção ilegal",
 			MessageUnrecognizedOption: "opção não reconhecida",
 			MessageInvalidInteractive: "valor inválido para --interactive",
-			MessageNativeUsage:        "Uso: bearm <comando> [opções]",
+			MessageNativeUsage:        "Uso: bearm <comando> [opções]", //nolint:misspell // "comando" is Portuguese.
 		}}
 	}
 

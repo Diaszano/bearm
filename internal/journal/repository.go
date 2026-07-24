@@ -59,12 +59,16 @@ func (r *Repository) AppendEvents(ctx context.Context, events []domain.JournalEv
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	if err := lockExclusive(file); err != nil {
 		return err
 	}
-	defer unlock(file)
+	defer func() {
+		_ = unlock(file)
+	}()
 
 	var buffer bytes.Buffer
 	encoder := json.NewEncoder(&buffer)
@@ -93,12 +97,16 @@ func (r *Repository) ReadAll(ctx context.Context) (ReadResult, error) {
 	if err != nil {
 		return ReadResult{}, err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	if err := lockExclusive(file); err != nil {
 		return ReadResult{}, err
 	}
-	defer unlock(file)
+	defer func() {
+		_ = unlock(file)
+	}()
 
 	reader := bufio.NewReader(file)
 	result := ReadResult{}

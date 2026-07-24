@@ -1,3 +1,4 @@
+// Package compatibility differentially tests Bearm against the host rm.
 package compatibility
 
 import (

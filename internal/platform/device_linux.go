@@ -15,7 +15,7 @@ func DeviceID(path string) (uint64, error) {
 		return 0, err
 	}
 
-	return uint64(stat.Dev), nil
+	return stat.Dev, nil
 }
 
 // MountPoint returns the top directory on the same device as path.

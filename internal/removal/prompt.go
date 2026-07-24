@@ -61,14 +61,18 @@ func (p *Prompter) getFormatter() PromptFormatter {
 }
 
 // ConfirmOnce asks for operation-level confirmation.
-func (p *Prompter) ConfirmOnce(plan domain.RemovalPlan) (bool, error) {
-	fmt.Fprint(p.writer, p.getFormatter().PromptOnce())
+func (p *Prompter) ConfirmOnce(_ domain.RemovalPlan) (bool, error) {
+	if _, err := fmt.Fprint(p.writer, p.getFormatter().PromptOnce()); err != nil {
+		return false, err
+	}
 	return p.readYes()
 }
 
 // ConfirmTarget asks for one target confirmation.
 func (p *Prompter) ConfirmTarget(path string) (bool, error) {
-	fmt.Fprint(p.writer, p.getFormatter().PromptTarget(path))
+	if _, err := fmt.Fprint(p.writer, p.getFormatter().PromptTarget(path)); err != nil {
+		return false, err
+	}
 	return p.readYes()
 }
 

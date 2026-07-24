@@ -1,5 +1,6 @@
 //go:build linux
 
+// Package linux implements the FreeDesktop Trash backend.
 package linux
 
 import (

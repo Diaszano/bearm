@@ -77,11 +77,7 @@ func New(stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) *App {
 	})
 }
 
-type discardJournal struct{}
-
-func (d *discardJournal) Append(_ context.Context, _ []domain.TrashRecord) error {
-	return nil
-}
+func ignoreWrite(_ int, _ error) {}
 
 // NewWithDependencies creates an application with explicit infrastructure.
 func NewWithDependencies(
@@ -104,7 +100,7 @@ func NewWithDependencies(
 func (a *App) Run(ctx context.Context, argv []string) int {
 	invocation, err := cli.ResolveInvocation(argv)
 	if err != nil {
-		fmt.Fprintln(a.err, err)
+		ignoreWrite(fmt.Fprintln(a.err, err))
 		return 2
 	}
 
@@ -128,27 +124,27 @@ func (a *App) runCompatibility(ctx context.Context, args []string) int {
 	if err != nil {
 		var usageErr *cli.UsageError
 		if errors.As(err, &usageErr) {
-			fmt.Fprint(a.err, renderer.UnsupportedOption(usageErr))
-			fmt.Fprint(a.err, renderer.Usage())
+			ignoreWrite(fmt.Fprint(a.err, renderer.UnsupportedOption(usageErr)))
+			ignoreWrite(fmt.Fprint(a.err, renderer.Usage()))
 			return usageCode(profile)
 		}
-		fmt.Fprintf(a.err, "rm: %v\n", err)
+		ignoreWrite(fmt.Fprintf(a.err, "rm: %v\n", err))
 		return usageCode(profile)
 	}
 
 	if request.Options.ShowVersion {
-		fmt.Fprintln(a.out, a.info.String())
+		ignoreWrite(fmt.Fprintln(a.out, a.info.String()))
 		return 0
 	}
 	if request.Options.ShowHelp {
-		fmt.Fprintln(a.out, "Usage: rm [OPTION]... [FILE]...")
+		ignoreWrite(fmt.Fprintln(a.out, "Usage: rm [OPTION]... [FILE]..."))
 		return 0
 	}
 
 	if err := request.Validate(); err != nil {
-		fmt.Fprint(a.err, renderer.MissingOperand())
+		ignoreWrite(fmt.Fprint(a.err, renderer.MissingOperand()))
 		if profile == domain.ProfileBSD {
-			fmt.Fprint(a.err, renderer.Usage())
+			ignoreWrite(fmt.Fprint(a.err, renderer.Usage()))
 		}
 		return usageCode(profile)
 	}
@@ -157,7 +153,7 @@ func (a *App) runCompatibility(ctx context.Context, args []string) int {
 		return 0
 	}
 	if a.dependencies.Backend == nil || a.dependencies.Journal == nil || a.dependencies.Policy == nil {
-		fmt.Fprintln(a.err, "rm: removal infrastructure is not configured")
+		ignoreWrite(fmt.Fprintln(a.err, "rm: removal infrastructure is not configured"))
 		return 1
 	}
 
@@ -175,7 +171,7 @@ func (a *App) runCompatibility(ctx context.Context, args []string) int {
 
 	for _, item := range result.Items {
 		if item.Status == domain.ItemFailed && item.Err != nil {
-			fmt.Fprint(a.err, renderer.PathError(item.Path, item.Err))
+			ignoreWrite(fmt.Fprint(a.err, renderer.PathError(item.Path, item.Err)))
 		}
 	}
 	return result.ExitCode(profile)
@@ -186,38 +182,38 @@ func (a *App) runNative(ctx context.Context, args []string) int {
 	request, err := cli.ParseNative(args)
 	if err != nil {
 		if errors.Is(err, cli.ErrUnknownCommand) || errors.Is(err, cli.ErrMissingCommand) {
-			fmt.Fprintf(a.err, "bearm: %s\n", catalog.Text(i18n.MessageUnknownCommand))
+			ignoreWrite(fmt.Fprintf(a.err, "bearm: %s\n", catalog.Text(i18n.MessageUnknownCommand)))
 		} else {
-			fmt.Fprintf(a.err, "bearm: %v\n", err)
+			ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
 		}
 		return 2
 	}
 
 	if request.Command == cli.CommandVersion {
-		fmt.Fprintln(a.out, a.info.String())
+		ignoreWrite(fmt.Fprintln(a.out, a.info.String()))
 		return 0
 	}
 
 	if request.Command == cli.CommandConfig {
 		switch request.ConfigOp {
 		case "path":
-			fmt.Fprintln(a.out, a.dependencies.ConfigPath)
+			ignoreWrite(fmt.Fprintln(a.out, a.dependencies.ConfigPath))
 			return 0
 		case "check":
 			if err := a.dependencies.Config.Validate(); err != nil {
-				fmt.Fprintf(a.err, "bearm: configuração inválida: %v\n", err)
+				ignoreWrite(fmt.Fprintf(a.err, "bearm: configuração inválida: %v\n", err))
 				return 3
 			}
-			fmt.Fprintln(a.out, "Configuração válida.")
+			ignoreWrite(fmt.Fprintln(a.out, "Configuração válida."))
 			return 0
 		default:
-			fmt.Fprintln(a.err, "bearm: operação de configuração inválida")
+			ignoreWrite(fmt.Fprintln(a.err, "bearm: operação de configuração inválida"))
 			return 2
 		}
 	}
 
 	if a.dependencies.Repository == nil {
-		fmt.Fprintln(a.err, "bearm: repositório de histórico não configurado")
+		ignoreWrite(fmt.Fprintln(a.err, "bearm: repositório de histórico não configurado"))
 		return 1
 	}
 
@@ -230,8 +226,10 @@ func (a *App) runNative(ctx context.Context, args []string) int {
 		return a.runPurge(ctx, request)
 	case cli.CommandDoctor:
 		return a.runDoctor(ctx, request)
+	case cli.CommandVersion, cli.CommandConfig:
+		return 2
 	default:
-		fmt.Fprintf(a.err, "bearm: %s\n", catalog.Text(i18n.MessageUnknownCommand))
+		ignoreWrite(fmt.Fprintf(a.err, "bearm: %s\n", catalog.Text(i18n.MessageUnknownCommand)))
 		return 2
 	}
 }
@@ -239,7 +237,7 @@ func (a *App) runNative(ctx context.Context, args []string) int {
 func (a *App) runList(ctx context.Context, request cli.NativeRequest) int {
 	records, err := a.dependencies.Repository.ActiveItems(ctx)
 	if err != nil {
-		fmt.Fprintf(a.err, "bearm: %v\n", err)
+		ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
 		return 1
 	}
 	if len(records) > request.Limit {
@@ -250,14 +248,20 @@ func (a *App) runList(ctx context.Context, request cli.NativeRequest) int {
 		encoder := json.NewEncoder(a.out)
 		encoder.SetEscapeHTML(false)
 		if err := encoder.Encode(records); err != nil {
-			fmt.Fprintf(a.err, "bearm: %v\n", err)
+			ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
 			return 1
 		}
 		return 0
 	}
 
 	for _, record := range records {
-		fmt.Fprintf(a.out, "%s\t%s\t%s\n", record.ItemID, record.DeletedAt.Local().Format(time.RFC3339), record.OriginalPath)
+		ignoreWrite(fmt.Fprintf(
+			a.out,
+			"%s\t%s\t%s\n",
+			record.ItemID,
+			record.DeletedAt.Local().Format(time.RFC3339),
+			record.OriginalPath,
+		))
 	}
 	return 0
 }
@@ -288,13 +292,13 @@ func (a *App) selectRecords(ctx context.Context, request cli.NativeRequest) ([]d
 func (a *App) runRestore(ctx context.Context, request cli.NativeRequest) int {
 	records, err := a.selectRecords(ctx, request)
 	if err != nil {
-		fmt.Fprintf(a.err, "bearm: %v\n", err)
+		ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
 		return 1
 	}
 
 	policy := restore.CollisionPolicy(a.dependencies.Config.Restore.CollisionPolicy)
 	if policy == restore.CollisionOverwrite {
-		fmt.Fprintln(a.err, "bearm: overwrite exige confirmação explícita e não é usado por restore padrão")
+		ignoreWrite(fmt.Fprintln(a.err, "bearm: overwrite exige confirmação explícita e não é usado por restore padrão"))
 		return 2
 	}
 	service := restore.NewService(a.dependencies.Repository, time.Now)
@@ -305,7 +309,7 @@ func (a *App) runRestore(ctx context.Context, request cli.NativeRequest) int {
 func (a *App) runPurge(ctx context.Context, request cli.NativeRequest) int {
 	records, err := a.selectRecords(ctx, request)
 	if err != nil {
-		fmt.Fprintf(a.err, "bearm: %v\n", err)
+		ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
 		return 1
 	}
 
@@ -314,7 +318,7 @@ func (a *App) runPurge(ctx context.Context, request cli.NativeRequest) int {
 		prompter := removal.NewPrompter(a.stdin, a.err)
 		confirmed, err = prompter.ConfirmTarget("itens selecionados permanentemente")
 		if err != nil {
-			fmt.Fprintf(a.err, "bearm: %v\n", err)
+			ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
 			return 1
 		}
 	}
@@ -327,20 +331,21 @@ func (a *App) runPurge(ctx context.Context, request cli.NativeRequest) int {
 func (a *App) runDoctor(ctx context.Context, request cli.NativeRequest) int {
 	findings, err := restore.NewDoctor(a.dependencies.Repository).Check(ctx)
 	if err != nil {
-		fmt.Fprintf(a.err, "bearm: %v\n", err)
+		ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
 		return 1
 	}
 
-	if request.JSON {
+	switch {
+	case request.JSON:
 		if err := json.NewEncoder(a.out).Encode(findings); err != nil {
-			fmt.Fprintf(a.err, "bearm: %v\n", err)
+			ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
 			return 1
 		}
-	} else if len(findings) == 0 {
-		fmt.Fprintln(a.out, "Nenhum problema encontrado.")
-	} else {
+	case len(findings) == 0:
+		ignoreWrite(fmt.Fprintln(a.out, "Nenhum problema encontrado."))
+	default:
 		for _, finding := range findings {
-			fmt.Fprintf(a.out, "%s: %s (%s)\n", finding.Code, finding.Message, finding.Path)
+			ignoreWrite(fmt.Fprintf(a.out, "%s: %s (%s)\n", finding.Code, finding.Message, finding.Path))
 		}
 	}
 
@@ -355,10 +360,10 @@ func renderNativeResults(stdout, stderr io.Writer, results []domain.ItemResult) 
 	for _, result := range results {
 		if result.Status == domain.ItemFailed {
 			failed = true
-			fmt.Fprintf(stderr, "bearm: %s: %v\n", result.Path, result.Err)
+			ignoreWrite(fmt.Fprintf(stderr, "bearm: %s: %v\n", result.Path, result.Err))
 			continue
 		}
-		fmt.Fprintf(stdout, "%s\t%s\n", result.Status, result.Path)
+		ignoreWrite(fmt.Fprintf(stdout, "%s\t%s\n", result.Status, result.Path))
 	}
 	if failed {
 		return 1

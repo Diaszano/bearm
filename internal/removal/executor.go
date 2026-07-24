@@ -126,7 +126,7 @@ func (e *Executor) Execute(ctx context.Context, plan domain.RemovalPlan) domain.
 			Path: target.InputPath, Status: domain.ItemTrashed, Record: &recordCopy,
 		})
 		if plan.Request.Options.Verbose {
-			fmt.Fprintln(e.verbose, target.InputPath)
+			_, _ = fmt.Fprintln(e.verbose, target.InputPath)
 		}
 	}
 

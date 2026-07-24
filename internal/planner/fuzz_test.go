@@ -25,7 +25,7 @@ func FuzzSafetyPolicyCheck(f *testing.F) {
 		f.Fatal(err)
 	}
 
-	f.Fuzz(func(t *testing.T, input string) {
+	f.Fuzz(func(_ *testing.T, input string) {
 		if !filepath.IsAbs(input) {
 			return
 		}
