@@ -6,6 +6,8 @@ type ItemStatus string
 const (
 	// ItemTrashed indicates a successful move to trash.
 	ItemTrashed ItemStatus = "trashed"
+	// ItemRestored indicates a successful restore.
+	ItemRestored ItemStatus = "restored"
 	// ItemSkipped indicates an intentionally ignored target.
 	ItemSkipped ItemStatus = "skipped"
 	// ItemDeclined indicates a user-declined interactive target.
