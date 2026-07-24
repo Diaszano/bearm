@@ -8,6 +8,8 @@ const (
 	ItemTrashed ItemStatus = "trashed"
 	// ItemRestored indicates a successful restore.
 	ItemRestored ItemStatus = "restored"
+	// ItemPurged indicates a successful permanent purge.
+	ItemPurged ItemStatus = "purged"
 	// ItemSkipped indicates an intentionally ignored target.
 	ItemSkipped ItemStatus = "skipped"
 	// ItemDeclined indicates a user-declined interactive target.
