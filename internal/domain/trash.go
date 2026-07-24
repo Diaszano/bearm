@@ -36,3 +36,13 @@ type TrashBackend interface {
 	// Move moves the planned target into the reserved trash destination and returns a TrashRecord.
 	Move(context.Context, PlannedTarget, Destination, string) (TrashRecord, error)
 }
+
+// Event converts a trash record into a versioned journal event.
+func (r TrashRecord) Event(action JournalAction, occurredAt time.Time) JournalEvent {
+	return JournalEvent{
+		SchemaVersion: 1,
+		Action:        action,
+		OccurredAt:    occurredAt.UTC(),
+		Record:        r,
+	}
+}
