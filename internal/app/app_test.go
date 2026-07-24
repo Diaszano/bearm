@@ -7,8 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Diaszano/bearm/internal/buildinfo"
+	"github.com/Diaszano/bearm/internal/domain"
+	"github.com/Diaszano/bearm/internal/journal"
 	"github.com/Diaszano/bearm/internal/safety"
 	"github.com/Diaszano/bearm/internal/testutil"
 )
@@ -126,5 +129,90 @@ func TestRunCompatibilityMovesPlannedTarget(t *testing.T) {
 	}
 	if len(backend.Moved) != 1 || backend.Moved[0] != source {
 		t.Fatalf("Moved = %#v", backend.Moved)
+	}
+}
+
+func TestRunNativeListJSON(t *testing.T) {
+	t.Parallel()
+
+	path := filepath.Join(t.TempDir(), "journal.jsonl")
+	repository := journal.New(path, time.Now)
+	record := domain.TrashRecord{
+		SchemaVersion: 1,
+		ItemID:        "item-1",
+		OperationID:   "operation-1",
+		OriginalPath:  "/work/file",
+		TrashedPath:   "/trash/file",
+		Backend:       "fake",
+		DeletedAt:     time.Now(),
+		Status:        "trashed",
+	}
+	if err := repository.Append(context.Background(), []domain.TrashRecord{record}); err != nil {
+		t.Fatal(err)
+	}
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	instance := NewWithDependencies(
+		strings.NewReader(""),
+		&stdout,
+		&stderr,
+		buildinfo.Current(),
+		Dependencies{Repository: repository},
+	)
+
+	code := instance.Run(context.Background(), []string{"bearm", "list", "--json"})
+	if code != 0 {
+		t.Fatalf("Run() code = %d, stderr = %q", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), `"item_id":"item-1"`) {
+		t.Fatalf("stdout = %q", stdout.String())
+	}
+}
+
+func TestRunNativeRestoreLast(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	trashed := filepath.Join(root, "trash", "file")
+	original := filepath.Join(root, "work", "file")
+	if err := os.MkdirAll(filepath.Dir(trashed), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(trashed, []byte("data"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	repository := journal.New(filepath.Join(root, "journal.jsonl"), time.Now)
+	record := domain.TrashRecord{
+		SchemaVersion: 1,
+		ItemID:        "item-1",
+		OperationID:   "operation-1",
+		OriginalPath:  original,
+		TrashedPath:   trashed,
+		Backend:       "fake",
+		DeletedAt:     time.Now(),
+		Status:        "trashed",
+	}
+	if err := repository.Append(context.Background(), []domain.TrashRecord{record}); err != nil {
+		t.Fatal(err)
+	}
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	instance := NewWithDependencies(
+		strings.NewReader(""),
+		&stdout,
+		&stderr,
+		buildinfo.Current(),
+		Dependencies{Repository: repository},
+	)
+
+	code := instance.Run(context.Background(), []string{"bearm", "restore", "--last"})
+	if code != 0 {
+		t.Fatalf("Run() code = %d, stderr = %q", code, stderr.String())
+	}
+	if _, err := os.Stat(original); err != nil {
+		t.Fatalf("restored path missing: %v", err)
 	}
 }
