@@ -64,3 +64,26 @@ jobs:
           cache: true
       - run: go test -race ./internal/trash/darwin -count=5
 
+  fuzz-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: true
+      - run: go test ./internal/cli -fuzz=FuzzParseCompatibility -fuzztime=20s
+      - run: go test ./internal/cli -fuzz=FuzzParseNative -fuzztime=20s
+      - run: go test ./internal/planner -fuzz=FuzzSafetyPolicyCheck -fuzztime=20s
+
+  benchmarks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: true
+      - run: go test ./internal/cli ./internal/journal -run '^$' -bench . -benchmem
+
+
