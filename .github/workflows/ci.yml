@@ -43,3 +43,24 @@ jobs:
           distribution: goreleaser
           version: latest
           args: release --snapshot --clean
+
+  linux-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: true
+      - run: go test -race ./internal/trash/linux -count=5
+
+  darwin-backend:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: true
+      - run: go test -race ./internal/trash/darwin -count=5
+
