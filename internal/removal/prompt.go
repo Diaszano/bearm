@@ -10,15 +10,36 @@ import (
 	"github.com/Diaszano/bearm/internal/domain"
 )
 
+// PromptFormatter formats confirmation prompts.
+type PromptFormatter interface {
+	PromptOnce() string
+	PromptTarget(path string) string
+}
+
+type defaultPromptFormatter struct{}
+
+func (defaultPromptFormatter) PromptOnce() string {
+	return "rm: remove all arguments? "
+}
+
+func (defaultPromptFormatter) PromptTarget(path string) string {
+	return fmt.Sprintf("rm: remove %s? ", path)
+}
+
 // Prompter handles compatibility confirmation input and output.
 type Prompter struct {
-	reader *bufio.Reader
-	writer io.Writer
+	reader    *bufio.Reader
+	writer    io.Writer
+	formatter PromptFormatter
 }
 
 // NewPrompter creates a confirmation prompter.
-func NewPrompter(reader io.Reader, writer io.Writer) *Prompter {
-	return &Prompter{reader: bufio.NewReader(reader), writer: writer}
+func NewPrompter(reader io.Reader, writer io.Writer, formatter ...PromptFormatter) *Prompter {
+	var f PromptFormatter = defaultPromptFormatter{}
+	if len(formatter) > 0 && formatter[0] != nil {
+		f = formatter[0]
+	}
+	return &Prompter{reader: bufio.NewReader(reader), writer: writer, formatter: f}
 }
 
 // NeedsOncePrompt reports whether -I requires one confirmation.
@@ -32,15 +53,22 @@ func NeedsOncePrompt(plan domain.RemovalPlan) bool {
 	return plan.Request.Options.Recursive
 }
 
+func (p *Prompter) getFormatter() PromptFormatter {
+	if p.formatter == nil {
+		return defaultPromptFormatter{}
+	}
+	return p.formatter
+}
+
 // ConfirmOnce asks for operation-level confirmation.
 func (p *Prompter) ConfirmOnce(plan domain.RemovalPlan) (bool, error) {
-	fmt.Fprint(p.writer, "rm: remove all arguments? ")
+	fmt.Fprint(p.writer, p.getFormatter().PromptOnce())
 	return p.readYes()
 }
 
 // ConfirmTarget asks for one target confirmation.
 func (p *Prompter) ConfirmTarget(path string) (bool, error) {
-	fmt.Fprintf(p.writer, "rm: remove %s? ", path)
+	fmt.Fprint(p.writer, p.getFormatter().PromptTarget(path))
 	return p.readYes()
 }
 

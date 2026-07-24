@@ -121,31 +121,18 @@ func (a *App) runCompatibility(ctx context.Context, args []string) int {
 		a.getenv,
 		runtime.GOOS,
 	)
+	language := i18n.ResolveCompatibilityLanguage(a.getenv)
+	renderer := cli.NewCompatibilityRenderer(profile, language, "rm")
+
 	request, err := cli.ParseCompatibility(args, profile)
 	if err != nil {
 		var usageErr *cli.UsageError
 		if errors.As(err, &usageErr) {
-			catalog := i18n.NewCatalog(i18n.ResolveCompatibilityLanguage(a.getenv))
-			switch usageErr.Kind {
-			case "invalid-interactive":
-				fmt.Fprintf(a.err, "rm: %s '%s'\n", catalog.Text(i18n.MessageInvalidInteractive), usageErr.Value)
-			case "unsupported-option":
-				if strings.HasPrefix(usageErr.Option, "--") {
-					fmt.Fprintf(a.err, "rm: %s '%s'\n", catalog.Text(i18n.MessageUnrecognizedOption), usageErr.Option)
-				} else {
-					letter := strings.TrimPrefix(usageErr.Option, "-")
-					if profile == domain.ProfileBSD {
-						fmt.Fprintf(a.err, "rm: %s -- %s\n", catalog.Text(i18n.MessageIllegalOption), letter)
-					} else {
-						fmt.Fprintf(a.err, "rm: %s -- '%s'\n", catalog.Text(i18n.MessageIllegalOption), letter)
-					}
-				}
-			default:
-				fmt.Fprintf(a.err, "rm: %v\n", err)
-			}
-		} else {
-			fmt.Fprintf(a.err, "rm: %v\n", err)
+			fmt.Fprint(a.err, renderer.UnsupportedOption(usageErr))
+			fmt.Fprint(a.err, renderer.Usage())
+			return usageCode(profile)
 		}
+		fmt.Fprintf(a.err, "rm: %v\n", err)
 		return usageCode(profile)
 	}
 
@@ -159,8 +146,10 @@ func (a *App) runCompatibility(ctx context.Context, args []string) int {
 	}
 
 	if err := request.Validate(); err != nil {
-		catalog := i18n.NewCatalog(i18n.ResolveCompatibilityLanguage(a.getenv))
-		fmt.Fprintf(a.err, "rm: %s\n", catalog.Text(i18n.MessageMissingOperand))
+		fmt.Fprint(a.err, renderer.MissingOperand())
+		if profile == domain.ProfileBSD {
+			fmt.Fprint(a.err, renderer.Usage())
+		}
 		return usageCode(profile)
 	}
 
@@ -178,7 +167,7 @@ func (a *App) runCompatibility(ctx context.Context, args []string) int {
 		a.dependencies.Backend,
 		a.dependencies.Journal,
 		a.dependencies.Policy,
-		removal.NewPrompter(a.stdin, a.err),
+		removal.NewPrompter(a.stdin, a.err, renderer),
 		a.out,
 	)
 	result := executor.Execute(ctx, plan)
@@ -186,7 +175,7 @@ func (a *App) runCompatibility(ctx context.Context, args []string) int {
 
 	for _, item := range result.Items {
 		if item.Status == domain.ItemFailed && item.Err != nil {
-			fmt.Fprintf(a.err, "rm: %s: %v\n", item.Path, item.Err)
+			fmt.Fprint(a.err, renderer.PathError(item.Path, item.Err))
 		}
 	}
 	return result.ExitCode(profile)
