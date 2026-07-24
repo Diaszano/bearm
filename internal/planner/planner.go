@@ -122,70 +122,31 @@ func (p *Planner) Plan(
 			continue
 		}
 
-		reqWalk := requiresWalk(kind, request.Options)
-		if reqWalk {
-			descendants, err := WalkDepthFirst(absolute, deviceID, request.Options.OneFileSystem)
+		planned := domain.PlannedTarget{
+			InputPath:    operand,
+			AbsolutePath: absolute,
+			Kind:         kind,
+			DeviceID:     deviceID,
+			RequiresWalk: requiresWalk(kind, request.Options, p.policy),
+		}
+		if planned.RequiresWalk {
+			expanded, skipped, err := ExpandTarget(planned, request.Options, p.policy)
 			if err != nil {
 				failures = append(failures, failed(operand, err))
 				continue
 			}
-			for _, desc := range descendants {
-				if _, exists := seen[desc]; exists {
+			for _, exp := range expanded {
+				if _, exists := seen[exp.AbsolutePath]; exists {
 					continue
 				}
-				seen[desc] = struct{}{}
-
-				descInfo, err := os.Lstat(desc)
-				if err != nil {
-					failures = append(failures, failed(desc, err))
-					continue
-				}
-				descKind := classify(descInfo)
-				descDevice, err := platform.DeviceID(desc)
-				if err != nil {
-					failures = append(failures, failed(desc, err))
-					continue
-				}
-
-				if err := p.policy.Check(desc); err != nil {
-					failures = append(failures, failed(desc, err))
-					continue
-				}
-
-				if err := ValidatePreserveRootAll(
-					desc,
-					descKind,
-					request.Options.PreserveRoot,
-					platform.DeviceID,
-				); err != nil {
-					failures = append(failures, failed(desc, err))
-					continue
-				}
-
-				rel, relErr := filepath.Rel(absolute, desc)
-				descInputPath := operand
-				if relErr == nil && rel != "." {
-					descInputPath = filepath.Join(operand, rel)
-				}
-
-				plan.Targets = append(plan.Targets, domain.PlannedTarget{
-					InputPath:    descInputPath,
-					AbsolutePath: desc,
-					Kind:         descKind,
-					DeviceID:     descDevice,
-					RequiresWalk: false,
-				})
+				seen[exp.AbsolutePath] = struct{}{}
+				plan.Targets = append(plan.Targets, exp)
 			}
-		} else {
-			seen[absolute] = struct{}{}
-			plan.Targets = append(plan.Targets, domain.PlannedTarget{
-				InputPath:    operand,
-				AbsolutePath: absolute,
-				Kind:         kind,
-				DeviceID:     deviceID,
-				RequiresWalk: false,
-			})
+			failures = append(failures, skipped...)
+			continue
 		}
+		seen[absolute] = struct{}{}
+		plan.Targets = append(plan.Targets, planned)
 	}
 
 	return plan, failures
@@ -204,12 +165,18 @@ func classify(info os.FileInfo) domain.TargetKind {
 	return domain.TargetOther
 }
 
-func requiresWalk(kind domain.TargetKind, options domain.RemoveOptions) bool {
+func requiresWalk(
+	kind domain.TargetKind,
+	options domain.RemoveOptions,
+	policy *safety.Policy,
+) bool {
 	if kind != domain.TargetDir {
 		return false
 	}
 	return options.Interactive == domain.InteractiveAlways ||
-		options.OneFileSystem
+		options.Verbose ||
+		options.OneFileSystem ||
+		policy.InspectDescendants()
 }
 
 func directoryEmpty(path string) (bool, error) {
