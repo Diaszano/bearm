@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/Diaszano/bearm/internal/domain"
@@ -39,7 +41,13 @@ func (r CompatibilityRenderer) Usage() string {
 // MissingOperand renders a missing operand diagnostic.
 func (r CompatibilityRenderer) MissingOperand() string {
 	if r.language == i18n.LanguagePTBR {
+		if r.profile == domain.ProfileGNU {
+			return fmt.Sprintf("%s: operando ausente\nExperimente '%s --help' para mais informações.\n", r.program, r.program)
+		}
 		return fmt.Sprintf("%s: operando ausente\n", r.program)
+	}
+	if r.profile == domain.ProfileGNU {
+		return fmt.Sprintf("%s: missing operand\nTry '%s --help' for more information.\n", r.program, r.program)
 	}
 	return fmt.Sprintf("%s: missing operand\n", r.program)
 }
@@ -61,9 +69,24 @@ func (r CompatibilityRenderer) UnsupportedOption(err *UsageError) string {
 // PathError renders an operational path error.
 func (r CompatibilityRenderer) PathError(path string, err error) string {
 	if r.profile == domain.ProfileBSD {
-		return fmt.Sprintf("%s: %s: %v\n", r.program, path, err)
+		return fmt.Sprintf("%s: %s: %s\n", r.program, path, formatError(err))
 	}
-	return fmt.Sprintf("%s: cannot remove '%s': %v\n", r.program, path, err)
+	return fmt.Sprintf("%s: cannot remove '%s': %s\n", r.program, path, formatError(err))
+}
+
+func formatError(err error) string {
+	if err == nil {
+		return ""
+	}
+	var pe *os.PathError
+	msg := err.Error()
+	if errors.As(err, &pe) && pe.Err != nil {
+		msg = pe.Err.Error()
+	}
+	if len(msg) > 0 && msg[0] >= 'a' && msg[0] <= 'z' {
+		msg = string(msg[0]-'a'+'A') + msg[1:]
+	}
+	return msg
 }
 
 // PromptOnce renders the once-only confirmation prompt.

@@ -13,7 +13,7 @@ func TestGNURendererMissingOperand(t *testing.T) {
 	t.Parallel()
 
 	renderer := cli.NewCompatibilityRenderer(domain.ProfileGNU, i18n.LanguageEN, "rm")
-	if got := renderer.MissingOperand(); got != "rm: missing operand\n" {
+	if got := renderer.MissingOperand(); got != "rm: missing operand\nTry 'rm --help' for more information.\n" {
 		t.Fatalf("MissingOperand() = %q", got)
 	}
 }
@@ -69,7 +69,7 @@ func TestRendererPromptsAndEdgeCases(t *testing.T) {
 
 	// GNU / PTBR
 	rendererPT := cli.NewCompatibilityRenderer(domain.ProfileGNU, i18n.LanguagePTBR, "rm")
-	if got := rendererPT.MissingOperand(); got != "rm: operando ausente\n" {
+	if got := rendererPT.MissingOperand(); got != "rm: operando ausente\nExperimente 'rm --help' para mais informações.\n" {
 		t.Fatalf("MissingOperand() = %q", got)
 	}
 	if got := rendererPT.Usage(); got != "Usage: rm [OPTION]... [FILE]...\n" {
