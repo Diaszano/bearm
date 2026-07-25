@@ -111,6 +111,7 @@ func TestExecuteDeclinesOncePromptWithoutMoves(t *testing.T) {
 		Targets: []domain.PlannedTarget{
 			{InputPath: "dir", AbsolutePath: "/work/dir", Kind: domain.TargetDir},
 		},
+		ValidatedOperands: []domain.ValidatedOperand{{InputPath: "dir", Kind: domain.TargetDir}},
 	}
 
 	result := executor.Execute(context.Background(), plan)

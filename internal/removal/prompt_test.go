@@ -56,12 +56,12 @@ func TestNeedsOncePrompt(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "four targets",
+			name: "four validated operands",
 			plan: domain.RemovalPlan{
 				Request: domain.RemoveRequest{
 					Options: domain.RemoveOptions{Interactive: domain.InteractiveOnce},
 				},
-				Targets: make([]domain.PlannedTarget, 4),
+				ValidatedOperands: make([]domain.ValidatedOperand, 4),
 			},
 			want: true,
 		},
@@ -74,7 +74,7 @@ func TestNeedsOncePrompt(t *testing.T) {
 						Recursive:   true,
 					},
 				},
-				Targets: []domain.PlannedTarget{{Kind: domain.TargetDir}},
+				ValidatedOperands: []domain.ValidatedOperand{{Kind: domain.TargetDir}},
 			},
 			want: true,
 		},
@@ -84,7 +84,7 @@ func TestNeedsOncePrompt(t *testing.T) {
 				Request: domain.RemoveRequest{
 					Options: domain.RemoveOptions{Interactive: domain.InteractiveOnce},
 				},
-				Targets: make([]domain.PlannedTarget, 3),
+				ValidatedOperands: make([]domain.ValidatedOperand, 3),
 			},
 			want: false,
 		},

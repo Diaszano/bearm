@@ -102,10 +102,17 @@ type PlannedTarget struct {
 	RequiresWalk bool
 }
 
+// ValidatedOperand describes one accepted command-line operand before target deduplication or expansion.
+type ValidatedOperand struct {
+	InputPath string
+	Kind      TargetKind
+}
+
 // RemovalPlan is the validated set of targets for one operation.
 type RemovalPlan struct {
-	ID        string
-	CreatedAt time.Time
-	Request   RemoveRequest
-	Targets   []PlannedTarget
+	ID                string
+	CreatedAt         time.Time
+	Request           RemoveRequest
+	ValidatedOperands []ValidatedOperand
+	Targets           []PlannedTarget
 }

@@ -133,6 +133,139 @@ func TestRunCompatibilityMovesPlannedTarget(t *testing.T) {
 	}
 }
 
+func TestRunBSDInteractiveOnceCountsDuplicateOperands(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	path := filepath.Join(root, "file.txt")
+	if err := os.WriteFile(path, []byte("data"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	policy, err := safety.NewPolicy(safety.Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend := &testutil.Backend{}
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	instance := NewWithDependencies(
+		strings.NewReader("n\n"),
+		&stdout,
+		&stderr,
+		buildinfo.Current(),
+		Dependencies{Backend: backend, Journal: &testutil.Journal{}, Policy: policy},
+	)
+	instance.getenv = func(key string) string {
+		if key == "BEARM_COMPAT" {
+			return "bsd"
+		}
+		return ""
+	}
+
+	code := instance.Run(context.Background(), []string{"rm", "-I", path, path, path, path})
+	if code != 1 {
+		t.Fatalf("Run() code = %d, want 1", code)
+	}
+	if got := stderr.String(); got != "remove 4 files? " {
+		t.Fatalf("stderr = %q", got)
+	}
+	if len(backend.Moved) != 0 {
+		t.Fatalf("Moved = %#v", backend.Moved)
+	}
+}
+
+func TestRunBSDInteractiveOnceFormatsRecursivePrompts(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		setup func(t *testing.T, root string) []string
+		want  func(root string) string
+	}{
+		{
+			name: "one directory",
+			setup: func(t *testing.T, root string) []string {
+				t.Helper()
+				directory := filepath.Join(root, "dir")
+				if err := os.Mkdir(directory, 0o700); err != nil {
+					t.Fatal(err)
+				}
+				return []string{directory}
+			},
+			want: func(root string) string { return "recursively remove " + filepath.Join(root, "dir") + "? " },
+		},
+		{
+			name: "two directories",
+			setup: func(t *testing.T, root string) []string {
+				t.Helper()
+				for _, name := range []string{"one", "two"} {
+					if err := os.Mkdir(filepath.Join(root, name), 0o700); err != nil {
+						t.Fatal(err)
+					}
+				}
+				return []string{filepath.Join(root, "one"), filepath.Join(root, "two")}
+			},
+			want: func(string) string { return "recursively remove 2 dirs? " },
+		},
+		{
+			name: "directory and file",
+			setup: func(t *testing.T, root string) []string {
+				t.Helper()
+				directory := filepath.Join(root, "dir")
+				if err := os.Mkdir(directory, 0o700); err != nil {
+					t.Fatal(err)
+				}
+				file := filepath.Join(root, "file.txt")
+				if err := os.WriteFile(file, []byte("data"), 0o600); err != nil {
+					t.Fatal(err)
+				}
+				return []string{directory, file}
+			},
+			want: func(root string) string {
+				return "recursively remove " + filepath.Join(root, "dir") + " and 1 file? "
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			operands := tt.setup(t, root)
+			policy, err := safety.NewPolicy(safety.Config{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			backend := &testutil.Backend{}
+			var stdout bytes.Buffer
+			var stderr bytes.Buffer
+			instance := NewWithDependencies(
+				strings.NewReader("n\n"), &stdout, &stderr, buildinfo.Current(),
+				Dependencies{Backend: backend, Journal: &testutil.Journal{}, Policy: policy},
+			)
+			instance.getenv = func(key string) string {
+				if key == "BEARM_COMPAT" {
+					return "bsd"
+				}
+				return ""
+			}
+
+			args := append([]string{"rm", "-Ir"}, operands...)
+			code := instance.Run(context.Background(), args)
+			if code != 1 {
+				t.Fatalf("Run() code = %d, want 1", code)
+			}
+			if got := stderr.String(); got != tt.want(root) {
+				t.Fatalf("stderr = %q, want %q", got, tt.want(root))
+			}
+			if len(backend.Moved) != 0 {
+				t.Fatalf("Moved = %#v", backend.Moved)
+			}
+		})
+	}
+}
+
 func TestRunNativeListJSON(t *testing.T) {
 	t.Parallel()
 

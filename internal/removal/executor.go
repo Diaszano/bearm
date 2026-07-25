@@ -57,6 +57,7 @@ func (e *Executor) Execute(ctx context.Context, plan domain.RemovalPlan) domain.
 			return result
 		}
 		if !accepted {
+			result.InteractiveOnceDeclined = true
 			for _, target := range plan.Targets {
 				result.Items = append(result.Items, domain.ItemResult{
 					Path: target.InputPath, Status: domain.ItemDeclined,
