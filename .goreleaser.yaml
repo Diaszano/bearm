@@ -72,6 +72,7 @@ homebrew_casks:
       name: homebrew-tap
       branch: main
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    skip_upload: "{{ .IsSnapshot }}"
     homepage: "https://github.com/Diaszano/bearm"
     description: "Safe native replacement for Unix rm with restore support"
     license: "MIT"
