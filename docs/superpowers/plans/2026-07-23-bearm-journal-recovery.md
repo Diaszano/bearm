@@ -1,5 +1,9 @@
 # Bearm Journal and Recovery Implementation Plan
 
+**Status:** Complete
+**Completion date:** 2026-07-25
+**Implementation range:** `ac35fabc68158fb381d56a274b9238e110190531..01931408c25b55e95ae4dd12061ce11388b348f8`
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a durable append-only journal and native commands for listing, restoring, permanently purging, and diagnosing Bearm trash records.
@@ -82,7 +86,7 @@ Task 1 journal domain events
   - `domain.TrashRecord.Event(action, occurredAt)`
   - `domain.JournalEvent.Validate() error`
 
-- [ ] **Step 1: Write failing event tests**
+- [x] **Step 1: Write failing event tests**
 
 Create `internal/domain/journal_test.go`:
 
@@ -148,7 +152,7 @@ func TestJournalEventValidateRejectsMissingIdentity(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Implement journal events**
+- [x] **Step 2: Implement journal events**
 
 Create `internal/domain/journal.go`:
 
@@ -214,7 +218,7 @@ func (r TrashRecord) Event(action JournalAction, occurredAt time.Time) JournalEv
 }
 ```
 
-- [ ] **Step 3: Run domain tests**
+- [x] **Step 3: Run domain tests**
 
 Run:
 
@@ -229,7 +233,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add internal/domain
@@ -257,7 +261,7 @@ git commit -m "feat: define Bearm journal events"
   - `(*Repository).FindItems(ctx, ids) ([]domain.TrashRecord, error)`
   - `(*Repository).LatestOperation(ctx) ([]domain.TrashRecord, error)`
 
-- [ ] **Step 1: Write failing append/read tests**
+- [x] **Step 1: Write failing append/read tests**
 
 Create `internal/journal/repository_test.go`:
 
@@ -357,7 +361,7 @@ func TestActiveItemsAppliesLifecycleEvents(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Write failing recovery tests**
+- [x] **Step 2: Write failing recovery tests**
 
 Create `internal/journal/recovery_test.go`:
 
@@ -395,7 +399,7 @@ func TestReadAllIgnoresIncompleteTrailingLine(t *testing.T) {
 }
 ```
 
-- [ ] **Step 3: Implement Unix file locking**
+- [x] **Step 3: Implement Unix file locking**
 
 Create `internal/journal/lock_unix.go`:
 
@@ -419,7 +423,7 @@ func unlock(file *os.File) error {
 }
 ```
 
-- [ ] **Step 4: Implement the JSONL repository**
+- [x] **Step 4: Implement the JSONL repository**
 
 Create `internal/journal/repository.go`:
 
@@ -637,7 +641,7 @@ func (r *Repository) Path() string {
 }
 ```
 
-- [ ] **Step 5: Run journal tests**
+- [x] **Step 5: Run journal tests**
 
 Run:
 
@@ -653,7 +657,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Add concurrent append coverage**
+- [x] **Step 6: Add concurrent append coverage**
 
 Append to `internal/journal/repository_test.go`:
 
@@ -717,7 +721,7 @@ Expected:
 PASS with no race reports.
 ```
 
-- [ ] **Step 7: Update the in-memory test journal**
+- [x] **Step 7: Update the in-memory test journal**
 
 Replace `internal/testutil/journal.go` with:
 
@@ -755,7 +759,7 @@ func (j *Journal) AppendEvents(_ context.Context, events []domain.JournalEvent) 
 }
 ```
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add internal/journal internal/testutil/journal.go
@@ -778,7 +782,7 @@ git commit -m "feat: persist Bearm operation journal"
   - `restore.Service`
   - `(*Service).Restore(ctx, records, policy) []domain.ItemResult`
 
-- [ ] **Step 1: Write failing restore tests**
+- [x] **Step 1: Write failing restore tests**
 
 Create `internal/restore/service_test.go`:
 
@@ -868,7 +872,7 @@ func TestRestoreFailsOnDestinationCollision(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Implement restore service**
+- [x] **Step 2: Implement restore service**
 
 Create `internal/restore/service.go`:
 
@@ -999,7 +1003,7 @@ func failed(path string, err error) domain.ItemResult {
 }
 ```
 
-- [ ] **Step 3: Correct the restored result status**
+- [x] **Step 3: Correct the restored result status**
 
 Add a new status to `internal/domain/result.go`:
 
@@ -1022,7 +1026,7 @@ Status: domain.ItemRestored,
 
 Update the success assertion in `internal/restore/service_test.go` to expect `domain.ItemRestored`.
 
-- [ ] **Step 4: Add rename collision coverage**
+- [x] **Step 4: Add rename collision coverage**
 
 Append to `internal/restore/service_test.go`:
 
@@ -1060,7 +1064,7 @@ func TestRestoreRenameCreatesUniqueDestination(t *testing.T) {
 }
 ```
 
-- [ ] **Step 5: Run restore tests**
+- [x] **Step 5: Run restore tests**
 
 Run:
 
@@ -1075,7 +1079,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add internal/domain/result.go internal/restore/service.go internal/restore/service_test.go
@@ -1095,7 +1099,7 @@ git commit -m "feat: restore Bearm trash items"
   - `restore.Purger`
   - `(*Purger).Purge(ctx, records, confirmed) []domain.ItemResult`
 
-- [ ] **Step 1: Add purge status**
+- [x] **Step 1: Add purge status**
 
 Add to `internal/domain/result.go`:
 
@@ -1104,7 +1108,7 @@ Add to `internal/domain/result.go`:
 ItemPurged ItemStatus = "purged"
 ```
 
-- [ ] **Step 2: Write failing purge tests**
+- [x] **Step 2: Write failing purge tests**
 
 Create `internal/restore/purge_test.go`:
 
@@ -1171,7 +1175,7 @@ func TestPurgeRemovesTargetAndAppendsEvent(t *testing.T) {
 }
 ```
 
-- [ ] **Step 3: Implement the purger**
+- [x] **Step 3: Implement the purger**
 
 Create `internal/restore/purge.go`:
 
@@ -1243,7 +1247,7 @@ func (p *Purger) Purge(
 }
 ```
 
-- [ ] **Step 4: Run purge tests**
+- [x] **Step 4: Run purge tests**
 
 Run:
 
@@ -1258,7 +1262,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/domain/result.go internal/restore/purge.go internal/restore/purge_test.go
@@ -1278,7 +1282,7 @@ git commit -m "feat: purge Bearm trash items explicitly"
   - `restore.Finding`
   - `(*Doctor).Check(ctx) ([]Finding, error)`
 
-- [ ] **Step 1: Write failing doctor tests**
+- [x] **Step 1: Write failing doctor tests**
 
 Create `internal/restore/doctor_test.go`:
 
@@ -1349,7 +1353,7 @@ Add import:
 "os"
 ```
 
-- [ ] **Step 2: Implement doctor checks**
+- [x] **Step 2: Implement doctor checks**
 
 Create `internal/restore/doctor.go`:
 
@@ -1414,7 +1418,7 @@ func (d *Doctor) Check(ctx context.Context) ([]Finding, error) {
 }
 ```
 
-- [ ] **Step 3: Run doctor tests**
+- [x] **Step 3: Run doctor tests**
 
 Run:
 
@@ -1429,7 +1433,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add internal/restore/doctor.go internal/restore/doctor_test.go
@@ -1454,7 +1458,7 @@ git commit -m "feat: diagnose Bearm journal consistency"
   - JSON and human-readable list/doctor rendering;
   - purge confirmation through stdin.
 
-- [ ] **Step 1: Extend application dependencies**
+- [x] **Step 1: Extend application dependencies**
 
 Replace `internal/app/dependencies.go` with:
 
@@ -1477,7 +1481,7 @@ type Dependencies struct {
 }
 ```
 
-- [ ] **Step 2: Add native integration tests**
+- [x] **Step 2: Add native integration tests**
 
 Add to `internal/app/app_test.go`:
 
@@ -1573,7 +1577,7 @@ Add imports:
 "github.com/Diaszano/bearm/internal/journal"
 ```
 
-- [ ] **Step 3: Implement native command dispatch**
+- [x] **Step 3: Implement native command dispatch**
 
 In `internal/app/app.go`, change `runNative` to accept `ctx`:
 
@@ -1749,7 +1753,7 @@ Add imports:
 "github.com/Diaszano/bearm/internal/restore"
 ```
 
-- [ ] **Step 4: Assemble the real repository in `main`**
+- [x] **Step 4: Assemble the real repository in `main`**
 
 In `cmd/bearm/main.go`, resolve home and platform directories, then create dependencies:
 
@@ -1813,7 +1817,7 @@ Add imports:
 "github.com/Diaszano/bearm/internal/safety"
 ```
 
-- [ ] **Step 5: Run native command tests**
+- [x] **Step 5: Run native command tests**
 
 Run:
 
@@ -1829,7 +1833,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Manually verify isolated native flow**
+- [x] **Step 6: Manually verify isolated native flow**
 
 Run:
 
@@ -1853,7 +1857,7 @@ The restore command reports a restored item.
 The original file exists again.
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add cmd/bearm internal/app

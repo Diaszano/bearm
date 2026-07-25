@@ -1,5 +1,9 @@
 # Bearm Linux Trash Backend Implementation Plan
 
+**Status:** Complete
+**Completion date:** 2026-07-25
+**Implementation range:** `ac35fabc68158fb381d56a274b9238e110190531..01931408c25b55e95ae4dd12061ce11388b348f8`
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement an atomic, collision-safe Linux trash backend that follows the FreeDesktop Trash specification and uses per-mount trash by default.
@@ -74,7 +78,7 @@ Task 1 path encoding and metadata
   - `trash.EncodePath(string) string`
   - `linux.RenderTrashInfo(path string, deletedAt time.Time) []byte`
 
-- [ ] **Step 1: Write failing percent-encoding tests**
+- [x] **Step 1: Write failing percent-encoding tests**
 
 Create `internal/trash/encoding_test.go`:
 
@@ -115,7 +119,7 @@ func TestEncodePathUsesUppercaseHex(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Write failing metadata tests**
+- [x] **Step 2: Write failing metadata tests**
 
 Create `internal/trash/linux/metadata_test.go`:
 
@@ -142,7 +146,7 @@ func TestRenderTrashInfo(t *testing.T) {
 }
 ```
 
-- [ ] **Step 3: Run tests and verify failure**
+- [x] **Step 3: Run tests and verify failure**
 
 Run on Linux:
 
@@ -156,7 +160,7 @@ Expected:
 FAIL because EncodePath and RenderTrashInfo do not exist.
 ```
 
-- [ ] **Step 4: Implement byte-safe path encoding**
+- [x] **Step 4: Implement byte-safe path encoding**
 
 Create `internal/trash/encoding.go`:
 
@@ -207,7 +211,7 @@ func isSafePathByte(value byte) bool {
 }
 ```
 
-- [ ] **Step 5: Implement `.trashinfo` rendering**
+- [x] **Step 5: Implement `.trashinfo` rendering**
 
 Create `internal/trash/linux/metadata.go`:
 
@@ -233,7 +237,7 @@ func RenderTrashInfo(path string, deletedAt time.Time) []byte {
 }
 ```
 
-- [ ] **Step 6: Run tests**
+- [x] **Step 6: Run tests**
 
 Run:
 
@@ -248,7 +252,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add internal/trash
@@ -274,7 +278,7 @@ git commit -m "feat: render FreeDesktop trash metadata"
   - `linux.Root`
   - `(*RootResolver).Resolve(targetPath string) (Root, error)`
 
-- [ ] **Step 1: Add the Linux syscall dependency**
+- [x] **Step 1: Add the Linux syscall dependency**
 
 Run:
 
@@ -289,7 +293,7 @@ Expected:
 go.mod includes golang.org/x/sys and go.sum is updated.
 ```
 
-- [ ] **Step 2: Write failing platform tests**
+- [x] **Step 2: Write failing platform tests**
 
 Create `internal/platform/device_linux_test.go`:
 
@@ -345,7 +349,7 @@ func TestMountPointReturnsAbsoluteExistingDirectory(t *testing.T) {
 }
 ```
 
-- [ ] **Step 3: Implement Linux device helpers**
+- [x] **Step 3: Implement Linux device helpers**
 
 Create `internal/platform/device_linux.go`:
 
@@ -416,7 +420,7 @@ func MountPoint(path string) (string, error) {
 }
 ```
 
-- [ ] **Step 4: Write failing trash-root tests**
+- [x] **Step 4: Write failing trash-root tests**
 
 Create `internal/trash/linux/mount_test.go`:
 
@@ -480,7 +484,7 @@ func TestRootEnsureCreatesFilesAndInfo(t *testing.T) {
 }
 ```
 
-- [ ] **Step 5: Implement root resolution**
+- [x] **Step 5: Implement root resolution**
 
 Create `internal/trash/linux/mount.go`:
 
@@ -603,7 +607,7 @@ func validAdminTrash(path string) bool {
 }
 ```
 
-- [ ] **Step 6: Run platform and root tests**
+- [x] **Step 6: Run platform and root tests**
 
 Run:
 
@@ -618,7 +622,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add go.mod go.sum internal/platform internal/trash/linux/mount.go internal/trash/linux/mount_test.go
@@ -638,7 +642,7 @@ git commit -m "feat: resolve Linux trash roots"
   - `linux.Reserve(root, base, metadata) (Reservation, error)`
   - `(*Reservation).Rollback() error`
 
-- [ ] **Step 1: Write failing reservation tests**
+- [x] **Step 1: Write failing reservation tests**
 
 Create `internal/trash/linux/reserve_test.go`:
 
@@ -724,7 +728,7 @@ func TestReservationRollbackRemovesOnlyMetadata(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run:
 
@@ -738,7 +742,7 @@ Expected:
 FAIL because Reserve and Reservation do not exist.
 ```
 
-- [ ] **Step 3: Implement atomic reservation**
+- [x] **Step 3: Implement atomic reservation**
 
 Create `internal/trash/linux/reserve.go`:
 
@@ -840,7 +844,7 @@ func writeAndSync(file *os.File, data []byte) error {
 }
 ```
 
-- [ ] **Step 4: Run reservation tests**
+- [x] **Step 4: Run reservation tests**
 
 Run:
 
@@ -855,7 +859,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/trash/linux/reserve.go internal/trash/linux/reserve_test.go
@@ -878,7 +882,7 @@ git commit -m "feat: reserve Linux trash names atomically"
   - `linux.NewBackend(resolver, clock, idGenerator)`
   - implementation of `domain.TrashBackend`.
 
-- [ ] **Step 1: Write failing backend tests**
+- [x] **Step 1: Write failing backend tests**
 
 Create `internal/trash/linux/backend_test.go`:
 
@@ -983,7 +987,7 @@ func TestBackendMoveRollsBackMetadataWhenRenameFails(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run:
 
@@ -997,7 +1001,7 @@ Expected:
 FAIL because NewBackend does not exist.
 ```
 
-- [ ] **Step 3: Implement the backend**
+- [x] **Step 3: Implement the backend**
 
 Create `internal/trash/linux/backend.go`:
 
@@ -1114,7 +1118,7 @@ func (b *Backend) Move(
 }
 ```
 
-- [ ] **Step 4: Run backend tests**
+- [x] **Step 4: Run backend tests**
 
 Run:
 
@@ -1129,7 +1133,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 5: Verify interface compliance**
+- [x] **Step 5: Verify interface compliance**
 
 Append to `internal/trash/linux/backend_test.go`:
 
@@ -1149,7 +1153,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add internal/trash/linux/backend.go internal/trash/linux/backend_test.go
@@ -1166,7 +1170,7 @@ git commit -m "feat: move Linux targets to trash"
 - Consumes: completed Linux backend.
 - Produces: verified behavior for symlinks, directories, Unicode paths, and concurrent name collisions.
 
-- [ ] **Step 1: Add integration tests**
+- [x] **Step 1: Add integration tests**
 
 Create `internal/trash/linux/integration_test.go`:
 
@@ -1351,7 +1355,7 @@ func moveTestTarget(
 }
 ```
 
-- [ ] **Step 2: Run integration and race tests**
+- [x] **Step 2: Run integration and race tests**
 
 Run on Linux:
 
@@ -1366,7 +1370,7 @@ Expected:
 PASS with no race reports.
 ```
 
-- [ ] **Step 3: Harden reservation against a target created after metadata reservation**
+- [x] **Step 3: Harden reservation against a target created after metadata reservation**
 
 Modify `Reserve` in `internal/trash/linux/reserve.go` immediately after the metadata file is closed:
 
@@ -1379,7 +1383,7 @@ if pathExists(targetPath) {
 
 This closes the ordinary race where another actor creates the target path between the initial existence check and metadata reservation.
 
-- [ ] **Step 4: Re-run concurrency tests**
+- [x] **Step 4: Re-run concurrency tests**
 
 Run:
 
@@ -1393,7 +1397,7 @@ Expected:
 PASS with no duplicate destination and no race reports.
 ```
 
-- [ ] **Step 5: Run Linux package verification**
+- [x] **Step 5: Run Linux package verification**
 
 Run:
 
@@ -1410,7 +1414,7 @@ Expected:
 All commands exit 0.
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add internal/trash/linux

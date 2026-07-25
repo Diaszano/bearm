@@ -1,5 +1,9 @@
 # Bearm macOS Trash Backend Implementation Plan
 
+**Status:** Complete
+**Completion date:** 2026-07-25
+**Implementation range:** `ac35fabc68158fb381d56a274b9238e110190531..01931408c25b55e95ae4dd12061ce11388b348f8`
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement a macOS backend that moves targets into system-visible home or per-volume Trash directories, records Bearm restore metadata, and never follows symlinks.
@@ -77,7 +81,7 @@ Task 1 shared reservation extraction
   - `(*trash.Reservation).Commit()`
   - `(*trash.Reservation).Rollback() error`
 
-- [ ] **Step 1: Write shared reservation tests before moving implementation**
+- [x] **Step 1: Write shared reservation tests before moving implementation**
 
 Create `internal/trash/reservation_test.go`:
 
@@ -167,7 +171,7 @@ func TestReserveNameRejectsUnsafeBase(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run shared tests and verify failure**
+- [x] **Step 2: Run shared tests and verify failure**
 
 Run:
 
@@ -181,7 +185,7 @@ Expected:
 FAIL because ReserveName does not exist.
 ```
 
-- [ ] **Step 3: Implement shared reservation**
+- [x] **Step 3: Implement shared reservation**
 
 Create `internal/trash/reservation.go`:
 
@@ -293,7 +297,7 @@ func writeAndSync(file *os.File, data []byte) error {
 }
 ```
 
-- [ ] **Step 4: Migrate the Linux backend**
+- [x] **Step 4: Migrate the Linux backend**
 
 In `internal/trash/linux/backend.go`, add the shared package import if missing:
 
@@ -332,7 +336,7 @@ internal/trash/linux/reserve.go
 internal/trash/linux/reserve_test.go
 ```
 
-- [ ] **Step 5: Run shared and Linux tests**
+- [x] **Step 5: Run shared and Linux tests**
 
 Run:
 
@@ -348,7 +352,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add internal/trash
@@ -372,7 +376,7 @@ git commit -m "refactor: share atomic trash reservations"
   - `darwin.Root`
   - `(*RootResolver).Resolve(targetPath string) (Root, error)`
 
-- [ ] **Step 1: Write Darwin platform tests**
+- [x] **Step 1: Write Darwin platform tests**
 
 Create `internal/platform/device_darwin_test.go`:
 
@@ -420,7 +424,7 @@ func TestDarwinMountPointReturnsAbsoluteDirectory(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Implement Darwin device helpers**
+- [x] **Step 2: Implement Darwin device helpers**
 
 Create `internal/platform/device_darwin.go`:
 
@@ -489,7 +493,7 @@ func MountPoint(path string) (string, error) {
 }
 ```
 
-- [ ] **Step 3: Write deterministic root-resolver tests**
+- [x] **Step 3: Write deterministic root-resolver tests**
 
 Create `internal/trash/darwin/mount_test.go`:
 
@@ -574,7 +578,7 @@ func TestRootResolverUsesPerVolumeTrash(t *testing.T) {
 }
 ```
 
-- [ ] **Step 4: Implement the macOS root resolver**
+- [x] **Step 4: Implement the macOS root resolver**
 
 Create `internal/trash/darwin/mount.go`:
 
@@ -670,7 +674,7 @@ func (r RootResolver) Resolve(targetPath string) (Root, error) {
 }
 ```
 
-- [ ] **Step 5: Run tests on macOS**
+- [x] **Step 5: Run tests on macOS**
 
 Run:
 
@@ -685,7 +689,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add internal/platform/device_darwin.go internal/platform/device_darwin_test.go internal/trash/darwin/mount.go internal/trash/darwin/mount_test.go
@@ -711,7 +715,7 @@ git commit -m "feat: resolve macOS trash roots"
   - `darwin.Backend`
   - implementation of `domain.TrashBackend`.
 
-- [ ] **Step 1: Write failing metadata tests**
+- [x] **Step 1: Write failing metadata tests**
 
 Create `internal/trash/darwin/metadata_test.go`:
 
@@ -750,7 +754,7 @@ func TestRenderMetadataIsStableJSON(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Implement metadata rendering**
+- [x] **Step 2: Implement metadata rendering**
 
 Create `internal/trash/darwin/metadata.go`:
 
@@ -784,7 +788,7 @@ func RenderMetadata(metadata Metadata) ([]byte, error) {
 }
 ```
 
-- [ ] **Step 3: Write failing backend tests**
+- [x] **Step 3: Write failing backend tests**
 
 Create `internal/trash/darwin/backend_test.go`:
 
@@ -847,7 +851,7 @@ func TestBackendMovesFileIntoHomeTrash(t *testing.T) {
 }
 ```
 
-- [ ] **Step 4: Implement the macOS backend**
+- [x] **Step 4: Implement the macOS backend**
 
 Create `internal/trash/darwin/backend.go`:
 
@@ -958,7 +962,7 @@ func (b *Backend) Move(
 }
 ```
 
-- [ ] **Step 5: Verify interface compliance**
+- [x] **Step 5: Verify interface compliance**
 
 Append to `internal/trash/darwin/backend_test.go`:
 
@@ -966,7 +970,7 @@ Append to `internal/trash/darwin/backend_test.go`:
 var _ domain.TrashBackend = (*darwintrash.Backend)(nil)
 ```
 
-- [ ] **Step 6: Run macOS backend tests**
+- [x] **Step 6: Run macOS backend tests**
 
 Run on macOS:
 
@@ -981,7 +985,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add internal/trash/darwin
@@ -998,7 +1002,7 @@ git commit -m "feat: move macOS targets to system trash"
 - Consumes: completed macOS backend and shared reservation.
 - Produces: verified directory, Unicode, dangling symlink, and collision behavior on macOS CI.
 
-- [ ] **Step 1: Add macOS integration tests**
+- [x] **Step 1: Add macOS integration tests**
 
 Create `internal/trash/darwin/integration_test.go`:
 
@@ -1172,7 +1176,7 @@ func moveDarwinTarget(
 }
 ```
 
-- [ ] **Step 2: Run macOS integration and race tests**
+- [x] **Step 2: Run macOS integration and race tests**
 
 Run on macOS:
 
@@ -1187,7 +1191,7 @@ Expected:
 PASS with no race reports.
 ```
 
-- [ ] **Step 3: Add backend-specific CI jobs**
+- [x] **Step 3: Add backend-specific CI jobs**
 
 Append to `.github/workflows/ci.yml`:
 
@@ -1213,7 +1217,7 @@ Append to `.github/workflows/ci.yml`:
       - run: go test -race ./internal/trash/darwin -count=5
 ```
 
-- [ ] **Step 4: Run complete platform verification**
+- [x] **Step 4: Run complete platform verification**
 
 Run on macOS:
 
@@ -1234,7 +1238,7 @@ Expected:
 All commands succeed.
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/trash/darwin .github/workflows/ci.yml
