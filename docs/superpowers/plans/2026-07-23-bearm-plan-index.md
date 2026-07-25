@@ -172,6 +172,13 @@ publishing, SBOMs, signing, and final acceptance automation.
 ./scripts/acceptance.sh
 ```
 
+### 09. Release-Readiness Closure
+
+[`2026-07-24-bearm-release-readiness-closure.md`](2026-07-24-bearm-release-readiness-closure.md)
+
+Codifies repeatable release gates, verifies non-publishing snapshot artifacts,
+and records the remote evidence required before historical plans are closed.
+
 ## Release Gate
 
 Version `v1.0.0` must not be tagged until all acceptance criteria in the design
@@ -195,3 +202,23 @@ alias rm='bearm rm'
 ```
 
 The project must never install over `/bin/rm` automatically.
+
+## Release-Readiness Evidence
+
+**Closure date:** 2026-07-25
+**Implementation range:** `ac35fabc68158fb381d56a274b9238e110190531..01931408c25b55e95ae4dd12061ce11388b348f8`
+
+| Gate | Successful evidence |
+| --- | --- |
+| Pull-request CI | https://github.com/Diaszano/bearm/actions/runs/30166805709 |
+| Security | https://github.com/Diaszano/bearm/actions/runs/30166805708 |
+| Release Readiness | https://github.com/Diaszano/bearm/actions/runs/30166806258 |
+
+The readiness run proved four platform archives and four archive SBOMs, the
+source archive, checksum, verified Sigstore bundle, and locally generated
+Homebrew cask. It did not publish a tag, GitHub Release, or production cask.
+
+**Credential exception:** `HOMEBREW_TAP_GITHUB_TOKEN` currently uses the
+user-authorized GitHub CLI token. It permits the required tap push check but
+does not meet the planned least-privilege token constraint and must be
+replaced before a production release.
