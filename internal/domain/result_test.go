@@ -32,6 +32,18 @@ func TestRemovalResultExitCodeFailure(t *testing.T) {
 	}
 }
 
+func TestRemovalResultExitCodeBSDOnceDeclined(t *testing.T) {
+	t.Parallel()
+
+	result := domain.RemovalResult{InteractiveOnceDeclined: true}
+	if got := result.ExitCode(domain.ProfileGNU); got != 0 {
+		t.Fatalf("GNU ExitCode() = %d, want 0", got)
+	}
+	if got := result.ExitCode(domain.ProfileBSD); got != 1 {
+		t.Fatalf("BSD ExitCode() = %d, want 1", got)
+	}
+}
+
 func TestRemovalResultHasFailures(t *testing.T) {
 	t.Parallel()
 

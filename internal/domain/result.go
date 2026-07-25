@@ -28,8 +28,9 @@ type ItemResult struct {
 
 // RemovalResult contains the outcomes of one compatibility operation.
 type RemovalResult struct {
-	OperationID string
-	Items       []ItemResult
+	OperationID             string
+	Items                   []ItemResult
+	InteractiveOnceDeclined bool
 }
 
 // HasFailures reports whether any target failed.
@@ -43,8 +44,11 @@ func (r RemovalResult) HasFailures() bool {
 }
 
 // ExitCode returns the compatibility operational exit code.
-func (r RemovalResult) ExitCode(_ CompatibilityProfile) int {
+func (r RemovalResult) ExitCode(profile CompatibilityProfile) int {
 	if r.HasFailures() {
+		return 1
+	}
+	if profile == ProfileBSD && r.InteractiveOnceDeclined {
 		return 1
 	}
 	return 0

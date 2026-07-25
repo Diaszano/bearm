@@ -12,13 +12,13 @@ import (
 
 // PromptFormatter formats confirmation prompts.
 type PromptFormatter interface {
-	PromptOnce() string
+	PromptOnce(domain.RemovalPlan) string
 	PromptTarget(path string) string
 }
 
 type defaultPromptFormatter struct{}
 
-func (defaultPromptFormatter) PromptOnce() string {
+func (defaultPromptFormatter) PromptOnce(domain.RemovalPlan) string {
 	return "rm: remove all arguments? "
 }
 
@@ -47,7 +47,10 @@ func NeedsOncePrompt(plan domain.RemovalPlan) bool {
 	if plan.Request.Options.Interactive != domain.InteractiveOnce {
 		return false
 	}
-	if len(plan.Targets) > 3 {
+	if len(plan.ValidatedOperands) == 0 {
+		return false
+	}
+	if len(plan.ValidatedOperands) > 3 {
 		return true
 	}
 	return plan.Request.Options.Recursive
@@ -61,8 +64,8 @@ func (p *Prompter) getFormatter() PromptFormatter {
 }
 
 // ConfirmOnce asks for operation-level confirmation.
-func (p *Prompter) ConfirmOnce(_ domain.RemovalPlan) (bool, error) {
-	if _, err := fmt.Fprint(p.writer, p.getFormatter().PromptOnce()); err != nil {
+func (p *Prompter) ConfirmOnce(plan domain.RemovalPlan) (bool, error) {
+	if _, err := fmt.Fprint(p.writer, p.getFormatter().PromptOnce(plan)); err != nil {
 		return false, err
 	}
 	return p.readYes()

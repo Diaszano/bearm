@@ -49,7 +49,6 @@ func (p *Planner) Plan(
 	}
 	failures := make([]domain.ItemResult, 0)
 	seen := make(map[string]struct{})
-	seenOperands := make(map[string]struct{})
 
 	for _, operand := range request.Operands {
 		if err := ctx.Err(); err != nil {
@@ -62,15 +61,6 @@ func (p *Planner) Plan(
 		absolute, err := filepath.Abs(operand)
 		if err != nil {
 			failures = append(failures, failed(operand, err))
-			continue
-		}
-
-		if _, exists := seenOperands[absolute]; exists {
-			continue
-		}
-		seenOperands[absolute] = struct{}{}
-
-		if _, exists := seen[absolute]; exists {
 			continue
 		}
 
@@ -137,12 +127,22 @@ func (p *Planner) Plan(
 			DeviceID:     deviceID,
 			RequiresWalk: requiresWalk(kind, request.Options, p.policy),
 		}
+		validatedOperand := domain.ValidatedOperand{
+			InputPath: operand,
+			Kind:      kind,
+		}
+
+		if _, exists := seen[absolute]; exists {
+			plan.ValidatedOperands = append(plan.ValidatedOperands, validatedOperand)
+			continue
+		}
 		if planned.RequiresWalk {
 			expanded, skipped, err := ExpandTarget(planned, request.Options, p.policy)
 			if err != nil {
 				failures = append(failures, failed(operand, err))
 				continue
 			}
+			plan.ValidatedOperands = append(plan.ValidatedOperands, validatedOperand)
 			for _, exp := range expanded {
 				if _, exists := seen[exp.AbsolutePath]; exists {
 					continue
@@ -153,6 +153,7 @@ func (p *Planner) Plan(
 			failures = append(failures, skipped...)
 			continue
 		}
+		plan.ValidatedOperands = append(plan.ValidatedOperands, validatedOperand)
 		seen[absolute] = struct{}{}
 		plan.Targets = append(plan.Targets, planned)
 	}

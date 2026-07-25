@@ -1,0 +1,104 @@
+name: Release Readiness
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  readiness:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: "1.24.0"
+          cache: true
+
+      - name: Require and verify Homebrew tap credentials
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::HOMEBREW_TAP_GITHUB_TOKEN is required"
+            exit 1
+          fi
+          permission="$(gh api repos/Diaszano/homebrew-tap --jq '.permissions.push')"
+          if [ "$permission" != true ]; then
+            echo "::error::Homebrew tap token does not have push permission"
+            exit 1
+          fi
+          if gh api repos/Diaszano/homebrew-tap/contents/Casks/bearm.rb >/dev/null 2>&1; then
+            echo "::error::production Homebrew cask already exists"
+            exit 1
+          fi
+
+      - name: Run closure gates
+        run: ./scripts/closure-gates.sh
+
+      - name: Install and run Govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@v1.6.0
+          govulncheck ./...
+
+      - uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
+
+      - name: Check GoReleaser configuration
+        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94
+        with:
+          distribution: goreleaser
+          version: "2.17.0"
+          args: check
+
+      - name: Build signed non-publishing snapshot
+        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94
+        with:
+          distribution: goreleaser
+          version: "2.17.0"
+          args: release --snapshot --clean
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          HOMEBREW_TAP_GITHUB_TOKEN: snapshot
+
+      - name: Verify artifact inventory
+        run: ./scripts/verify-release-artifacts.sh dist
+
+      - name: Verify checksum signature
+        run: |
+          checksum_path="$(
+            jq -er '.[] | select(.type == "Checksum") | .path' dist/artifacts.json
+          )"
+          signature_path="$(
+            jq -er '.[] | select(.type == "Signature") | .path' dist/artifacts.json
+          )"
+          cosign verify-blob "$checksum_path" \
+            --bundle "$signature_path" \
+            --certificate-identity \
+              "https://github.com/Diaszano/bearm/.github/workflows/release-readiness.yml@refs/heads/main" \
+            --certificate-oidc-issuer \
+              "https://token.actions.githubusercontent.com"
+
+      - name: Prove that readiness did not publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/Diaszano/bearm/tags --jq 'length')" -eq 0
+          test "$(gh api repos/Diaszano/bearm/releases --jq 'length')" -eq 0
+          if gh api repos/Diaszano/homebrew-tap/contents/Casks/bearm.rb >/dev/null 2>&1; then
+            echo "::error::readiness published a production cask"
+            exit 1
+          fi
+
+      - name: Upload readiness evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: bearm-release-readiness
+          path: dist
+          if-no-files-found: error
+          retention-days: 7

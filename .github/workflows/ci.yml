@@ -53,7 +53,7 @@ jobs:
         with:
           go-version: stable
           cache: true
-      - run: go test -race ./internal/trash/linux -count=5
+      - run: go test -race ./internal/trash/linux -count=10
 
   darwin-backend:
     runs-on: macos-latest
@@ -63,7 +63,7 @@ jobs:
         with:
           go-version: stable
           cache: true
-      - run: go test -race ./internal/trash/darwin -count=5
+      - run: go test -race ./internal/trash/darwin -count=10
 
   fuzz-smoke:
     runs-on: ubuntu-latest
@@ -100,4 +100,3 @@ jobs:
           go-version: stable
           cache: true
       - run: ./scripts/acceptance.sh
-

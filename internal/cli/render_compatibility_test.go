@@ -22,9 +22,18 @@ func TestBSDRendererUsage(t *testing.T) {
 	t.Parallel()
 
 	renderer := cli.NewCompatibilityRenderer(domain.ProfileBSD, i18n.LanguageEN, "rm")
-	want := "usage: rm [-f | -i] [-dIRrv] file ...\n"
+	want := "usage: rm [-f | -i] [-dIPRrvWx] file ...\n       unlink [--] file\n"
 	if got := renderer.Usage(); got != want {
 		t.Fatalf("Usage() = %q, want %q", got, want)
+	}
+}
+
+func TestBSDRendererMissingOperandUsesUsageOnly(t *testing.T) {
+	t.Parallel()
+
+	renderer := cli.NewCompatibilityRenderer(domain.ProfileBSD, i18n.LanguageEN, "rm")
+	if got := renderer.MissingOperand(); got != "" {
+		t.Fatalf("MissingOperand() = %q, want empty diagnostic before BSD usage", got)
 	}
 }
 
@@ -97,7 +106,7 @@ func TestRendererPromptsAndEdgeCases(t *testing.T) {
 	}
 
 	// PromptOnce and PromptTarget
-	if got := rendererGNU.PromptOnce(); got != "rm: remove all arguments? " {
+	if got := rendererGNU.PromptOnce(domain.RemovalPlan{}); got != "rm: remove all arguments? " {
 		t.Fatalf("PromptOnce() = %q", got)
 	}
 	if got := rendererGNU.PromptTarget("path.txt"); got != "rm: remove 'path.txt'? " {

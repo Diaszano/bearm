@@ -33,13 +33,16 @@ func NewCompatibilityRenderer(
 // Usage renders the selected profile usage text.
 func (r CompatibilityRenderer) Usage() string {
 	if r.profile == domain.ProfileBSD {
-		return fmt.Sprintf("usage: %s [-f | -i] [-dIRrv] file ...\n", r.program)
+		return fmt.Sprintf("usage: %s [-f | -i] [-dIPRrvWx] file ...\n       unlink [--] file\n", r.program)
 	}
 	return fmt.Sprintf("Usage: %s [OPTION]... [FILE]...\n", r.program)
 }
 
 // MissingOperand renders a missing operand diagnostic.
 func (r CompatibilityRenderer) MissingOperand() string {
+	if r.profile == domain.ProfileBSD {
+		return ""
+	}
 	if r.language == i18n.LanguagePTBR {
 		if r.profile == domain.ProfileGNU {
 			return fmt.Sprintf("%s: operando ausente\nExperimente '%s --help' para mais informações.\n", r.program, r.program)
@@ -90,8 +93,46 @@ func formatError(err error) string {
 }
 
 // PromptOnce renders the once-only confirmation prompt.
-func (r CompatibilityRenderer) PromptOnce() string {
+func (r CompatibilityRenderer) PromptOnce(plan domain.RemovalPlan) string {
+	if r.profile == domain.ProfileBSD {
+		return bsdPromptOnce(plan)
+	}
 	return fmt.Sprintf("%s: remove all arguments? ", r.program)
+}
+
+func bsdPromptOnce(plan domain.RemovalPlan) string {
+	operands := plan.ValidatedOperands
+	if !plan.Request.Options.Recursive {
+		return fmt.Sprintf("remove %d files? ", len(operands))
+	}
+
+	if len(operands) == 1 {
+		return fmt.Sprintf("recursively remove %s? ", operands[0].InputPath)
+	}
+
+	directories := make([]string, 0, len(operands))
+	files := 0
+	for _, operand := range operands {
+		if operand.Kind == domain.TargetDir {
+			directories = append(directories, operand.InputPath)
+			continue
+		}
+		files++
+	}
+
+	parts := make([]string, 0, 2)
+	if len(directories) == 1 {
+		parts = append(parts, directories[0])
+	} else if len(directories) > 1 {
+		parts = append(parts, fmt.Sprintf("%d dirs", len(directories)))
+	}
+	if files == 1 {
+		parts = append(parts, "1 file")
+	} else if files > 1 {
+		parts = append(parts, fmt.Sprintf("%d files", files))
+	}
+
+	return fmt.Sprintf("recursively remove %s? ", strings.Join(parts, " and "))
 }
 
 // PromptTarget renders a per-target confirmation prompt.
