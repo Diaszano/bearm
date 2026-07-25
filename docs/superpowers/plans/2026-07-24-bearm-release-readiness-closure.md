@@ -1,5 +1,9 @@
 # Bearm Release-Readiness Closure Implementation Plan
 
+**Status:** Complete with credential exception
+**Completion date:** 2026-07-25
+**Implementation range:** `ac35fabc68158fb381d56a274b9238e110190531..01931408c25b55e95ae4dd12061ce11388b348f8`
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Promote the implemented Bearm repository to a formally evidenced, release-ready state without creating a `v1.0.0` tag, GitHub Release, or production Homebrew cask.

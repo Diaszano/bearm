@@ -1,5 +1,9 @@
 # Bearm CLI Compatibility Implementation Plan
 
+**Status:** Complete
+**Completion date:** 2026-07-25
+**Implementation range:** `ac35fabc68158fb381d56a274b9238e110190531..01931408c25b55e95ae4dd12061ce11388b348f8`
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement deterministic invocation detection, ordered GNU/BSD `rm` parsing, typed diagnostics, locale selection, and native command parsing without touching the filesystem.
@@ -73,7 +77,7 @@ Task 1 invocation resolver
   - `cli.Invocation`
   - `cli.ResolveInvocation(argv []string) (Invocation, error)`
 
-- [ ] **Step 1: Write failing invocation tests**
+- [x] **Step 1: Write failing invocation tests**
 
 Create `internal/cli/invocation_test.go`:
 
@@ -143,7 +147,7 @@ func TestResolveInvocationRejectsEmptyArgv(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run:
 
@@ -157,7 +161,7 @@ Expected:
 FAIL because ResolveInvocation does not exist.
 ```
 
-- [ ] **Step 3: Implement invocation detection**
+- [x] **Step 3: Implement invocation detection**
 
 Create `internal/cli/invocation.go`:
 
@@ -218,7 +222,7 @@ func ResolveInvocation(argv []string) (Invocation, error) {
 }
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run:
 
@@ -233,7 +237,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/cli/invocation.go internal/cli/invocation_test.go
@@ -257,7 +261,7 @@ git commit -m "feat: detect Bearm invocation mode"
   - `i18n.Catalog`
   - `i18n.NewCatalog(language)`
 
-- [ ] **Step 1: Write failing locale tests**
+- [x] **Step 1: Write failing locale tests**
 
 Create `internal/i18n/locale_test.go`:
 
@@ -304,7 +308,7 @@ func TestResolveCompatibilityLanguageUsesLocalePrecedence(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Write failing catalog tests**
+- [x] **Step 2: Write failing catalog tests**
 
 Create `internal/i18n/catalog_test.go`:
 
@@ -336,7 +340,7 @@ func TestCatalogEnglishMissingOperand(t *testing.T) {
 }
 ```
 
-- [ ] **Step 3: Run tests and verify failure**
+- [x] **Step 3: Run tests and verify failure**
 
 Run:
 
@@ -350,7 +354,7 @@ Expected:
 FAIL because package internal/i18n does not exist.
 ```
 
-- [ ] **Step 4: Implement locale selection**
+- [x] **Step 4: Implement locale selection**
 
 Create `internal/i18n/locale.go`:
 
@@ -401,7 +405,7 @@ func normalizeLanguage(value string) Language {
 }
 ```
 
-- [ ] **Step 5: Implement typed catalogs**
+- [x] **Step 5: Implement typed catalogs**
 
 Create `internal/i18n/catalog.go`:
 
@@ -460,7 +464,7 @@ func (c Catalog) Text(key Message) string {
 }
 ```
 
-- [ ] **Step 6: Run tests**
+- [x] **Step 6: Run tests**
 
 Run:
 
@@ -475,7 +479,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add internal/i18n
@@ -500,7 +504,7 @@ git commit -m "feat: add Bearm message catalogs"
   - `domain.RemoveOptions.ShowHelp`
   - `domain.RemoveOptions.ShowVersion`
 
-- [ ] **Step 1: Extend domain options for compatibility-only output**
+- [x] **Step 1: Extend domain options for compatibility-only output**
 
 Modify `internal/domain/removal.go` so `RemoveOptions` is:
 
@@ -519,7 +523,7 @@ type RemoveOptions struct {
 }
 ```
 
-- [ ] **Step 2: Write ordered-parser tests**
+- [x] **Step 2: Write ordered-parser tests**
 
 Create `internal/cli/compatibility_test.go`:
 
@@ -671,7 +675,7 @@ func TestParseCompatibilityRejectsUnsupportedOption(t *testing.T) {
 }
 ```
 
-- [ ] **Step 3: Run tests and verify failure**
+- [x] **Step 3: Run tests and verify failure**
 
 Run:
 
@@ -685,7 +689,7 @@ Expected:
 FAIL because ParseCompatibility and UsageError do not exist.
 ```
 
-- [ ] **Step 4: Implement typed usage errors**
+- [x] **Step 4: Implement typed usage errors**
 
 Create `internal/cli/errors.go`:
 
@@ -713,7 +717,7 @@ func (e *UsageError) Error() string {
 }
 ```
 
-- [ ] **Step 5: Implement ordered compatibility parsing**
+- [x] **Step 5: Implement ordered compatibility parsing**
 
 Create `internal/cli/compatibility.go`:
 
@@ -880,7 +884,7 @@ func (s *compatibilityState) applyInteractive(value string) error {
 }
 ```
 
-- [ ] **Step 6: Run parser tests**
+- [x] **Step 6: Run parser tests**
 
 Run:
 
@@ -895,7 +899,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 7: Add parser validation tests for no operands**
+- [x] **Step 7: Add parser validation tests for no operands**
 
 Append to `internal/cli/compatibility_test.go`:
 
@@ -937,7 +941,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add internal/cli internal/domain/removal.go
@@ -957,7 +961,7 @@ git commit -m "feat: parse ordered rm compatibility options"
   - `cli.NativeRequest`
   - `cli.ParseNative(args []string) (NativeRequest, error)`
 
-- [ ] **Step 1: Write failing native-parser tests**
+- [x] **Step 1: Write failing native-parser tests**
 
 Create `internal/cli/native_test.go`:
 
@@ -1020,7 +1024,7 @@ func TestParseNativeRejectsConflictingRestoreSelectors(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run:
 
@@ -1034,7 +1038,7 @@ Expected:
 FAIL because ParseNative does not exist.
 ```
 
-- [ ] **Step 3: Implement native parsing**
+- [x] **Step 3: Implement native parsing**
 
 Create `internal/cli/native.go`:
 
@@ -1184,7 +1188,7 @@ func parseNativeDoctor(request NativeRequest, args []string) (NativeRequest, err
 }
 ```
 
-- [ ] **Step 4: Run native-parser tests**
+- [x] **Step 4: Run native-parser tests**
 
 Run:
 
@@ -1199,7 +1203,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/cli/native.go internal/cli/native_test.go
@@ -1224,7 +1228,7 @@ git commit -m "feat: parse Bearm native commands"
   - stable help/version handling;
   - parser fuzz targets.
 
-- [ ] **Step 1: Replace the application test with parser-routing coverage**
+- [x] **Step 1: Replace the application test with parser-routing coverage**
 
 Add these tests to `internal/app/app_test.go`:
 
@@ -1280,7 +1284,7 @@ func TestRunNativeUnknownCommandUsesPortuguese(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify at least one failure**
+- [x] **Step 2: Run tests and verify at least one failure**
 
 Run:
 
@@ -1294,7 +1298,7 @@ Expected:
 FAIL because App.Run does not route through the new parsers.
 ```
 
-- [ ] **Step 3: Integrate pure parsing into App.Run**
+- [x] **Step 3: Integrate pure parsing into App.Run**
 
 Replace `internal/app/app.go` with:
 
@@ -1415,7 +1419,7 @@ func usageCode(profile domain.CompatibilityProfile) int {
 }
 ```
 
-- [ ] **Step 4: Run application tests**
+- [x] **Step 4: Run application tests**
 
 Run:
 
@@ -1430,7 +1434,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 5: Add parser fuzz tests**
+- [x] **Step 5: Add parser fuzz tests**
 
 Create `internal/cli/fuzz_test.go`:
 
@@ -1488,7 +1492,7 @@ func FuzzParseNative(f *testing.F) {
 }
 ```
 
-- [ ] **Step 6: Run fuzz seeds and race tests**
+- [x] **Step 6: Run fuzz seeds and race tests**
 
 Run:
 
@@ -1503,7 +1507,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add internal/app internal/cli/fuzz_test.go

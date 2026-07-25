@@ -1,5 +1,9 @@
 # Bearm Compatibility, Hardening, and Release Implementation Plan
 
+**Status:** Complete
+**Completion date:** 2026-07-25
+**Implementation range:** `ac35fabc68158fb381d56a274b9238e110190531..01931408c25b55e95ae4dd12061ce11388b348f8`
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Verify observable `rm` compatibility on Linux and macOS, harden edge cases through fuzzing and benchmarks, and publish production-ready documentation and release artifacts.
@@ -105,7 +109,7 @@ Task 1 typed compatibility rendering
   - `PromptOnce() string`
   - `PromptTarget(path) string`.
 
-- [ ] **Step 1: Write failing renderer tests**
+- [x] **Step 1: Write failing renderer tests**
 
 Create `internal/cli/render_compatibility_test.go`:
 
@@ -177,7 +181,7 @@ func TestRendererPathError(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Implement compatibility rendering**
+- [x] **Step 2: Implement compatibility rendering**
 
 Create `internal/cli/render_compatibility.go`:
 
@@ -258,7 +262,7 @@ func (r CompatibilityRenderer) PromptTarget(path string) string {
 }
 ```
 
-- [ ] **Step 3: Run renderer tests**
+- [x] **Step 3: Run renderer tests**
 
 Run:
 
@@ -273,7 +277,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 4: Replace ad hoc compatibility rendering in the application**
+- [x] **Step 4: Replace ad hoc compatibility rendering in the application**
 
 In `internal/app/app.go`, create the renderer immediately after resolving profile:
 
@@ -313,7 +317,7 @@ fmt.Fprint(a.err, renderer.PathError(item.Path, item.Err))
 
 Inject renderer prompt strings into `removal.Prompter` by extending `NewPrompter` to accept a small prompt-text interface or explicit strings. Update prompt tests to preserve the exact defaults.
 
-- [ ] **Step 5: Run app and CLI tests**
+- [x] **Step 5: Run app and CLI tests**
 
 Run:
 
@@ -328,7 +332,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add internal/cli internal/app internal/removal
@@ -353,7 +357,7 @@ git commit -m "feat: render rm-compatible diagnostics"
   - normalized process outcomes;
   - host-specific differential tests.
 
-- [ ] **Step 1: Define compatibility cases**
+- [x] **Step 1: Define compatibility cases**
 
 Create `test/compatibility/cases.go`:
 
@@ -456,7 +460,7 @@ func CoreCases() []Case {
 }
 ```
 
-- [ ] **Step 2: Implement source-tree normalization**
+- [x] **Step 2: Implement source-tree normalization**
 
 Create `test/compatibility/normalize.go`:
 
@@ -530,7 +534,7 @@ func hasPrefix(path, root string) bool {
 }
 ```
 
-- [ ] **Step 3: Build Bearm once for subprocess tests**
+- [x] **Step 3: Build Bearm once for subprocess tests**
 
 Create `test/compatibility/testmain_test.go`:
 
@@ -574,7 +578,7 @@ func TestMain(m *testing.M) {
 }
 ```
 
-- [ ] **Step 4: Write the differential harness**
+- [x] **Step 4: Write the differential harness**
 
 Create `test/compatibility/harness_test.go`:
 
@@ -688,7 +692,7 @@ func normalizeProgram(value string) string {
 }
 ```
 
-- [ ] **Step 5: Run the first differential suite**
+- [x] **Step 5: Run the first differential suite**
 
 Run:
 
@@ -703,7 +707,7 @@ Any mismatch fails with exit code, stream, or normalized tree details.
 Fix compatibility rendering and semantics until all core cases pass.
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add test/compatibility
@@ -722,7 +726,7 @@ git commit -m "test: add rm differential harness"
 - Consumes: test-built Bearm and isolated temporary trees.
 - Produces: regression coverage for symlinks, unusual filenames, permission failures, path protection, concurrent operations, and interruption.
 
-- [ ] **Step 1: Add unusual filename and symlink differential cases**
+- [x] **Step 1: Add unusual filename and symlink differential cases**
 
 Append to `CoreCases()`:
 
@@ -780,7 +784,7 @@ Append to `CoreCases()`:
 },
 ```
 
-- [ ] **Step 2: Add hard-protection integration tests**
+- [x] **Step 2: Add hard-protection integration tests**
 
 Create `test/integration/security_test.go`:
 
@@ -868,7 +872,7 @@ func TestCompatibilityCannotRemoveSystemRootWithNoPreserveRoot(t *testing.T) {
 }
 ```
 
-- [ ] **Step 3: Add subprocess cancellation coverage**
+- [x] **Step 3: Add subprocess cancellation coverage**
 
 Create `test/integration/signal_test.go`:
 
@@ -930,7 +934,7 @@ var _ = domain.ProfileGNU
 
 Remove the final `var _` and unused domain import after the test compiles; it is not part of the committed result.
 
-- [ ] **Step 4: Add an end-to-end acceptance test**
+- [x] **Step 4: Add an end-to-end acceptance test**
 
 Create `test/integration/acceptance_test.go`:
 
@@ -1011,7 +1015,7 @@ func TestRemoveListRestoreRoundTrip(t *testing.T) {
 }
 ```
 
-- [ ] **Step 5: Run edge and security tests**
+- [x] **Step 5: Run edge and security tests**
 
 Run:
 
@@ -1027,7 +1031,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add test
@@ -1046,7 +1050,7 @@ git commit -m "test: cover Bearm safety edge cases"
 - Consumes: parser, path planner, journal repository.
 - Produces: fuzz targets and stable benchmark reporting.
 
-- [ ] **Step 1: Add planner fuzzing**
+- [x] **Step 1: Add planner fuzzing**
 
 Create `internal/planner/fuzz_test.go`:
 
@@ -1087,7 +1091,7 @@ func FuzzSafetyPolicyCheck(f *testing.F) {
 }
 ```
 
-- [ ] **Step 2: Add parser benchmarks**
+- [x] **Step 2: Add parser benchmarks**
 
 Create `internal/cli/benchmark_test.go`:
 
@@ -1130,7 +1134,7 @@ func BenchmarkParseTenThousandOperands(b *testing.B) {
 }
 ```
 
-- [ ] **Step 3: Add journal benchmarks**
+- [x] **Step 3: Add journal benchmarks**
 
 Create `internal/journal/benchmark_test.go`:
 
@@ -1174,7 +1178,7 @@ func BenchmarkAppendOperation(b *testing.B) {
 }
 ```
 
-- [ ] **Step 4: Add a CI fuzz smoke job**
+- [x] **Step 4: Add a CI fuzz smoke job**
 
 Append to `.github/workflows/ci.yml`:
 
@@ -1202,7 +1206,7 @@ Append to `.github/workflows/ci.yml`:
       - run: go test ./internal/cli ./internal/journal -run '^$' -bench . -benchmem
 ```
 
-- [ ] **Step 5: Run local fuzz seeds and benchmarks**
+- [x] **Step 5: Run local fuzz seeds and benchmarks**
 
 Run:
 
@@ -1217,7 +1221,7 @@ Expected:
 All tests pass and benchmark output reports allocations and time.
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add internal/cli/benchmark_test.go internal/journal/benchmark_test.go internal/planner/fuzz_test.go .github/workflows/ci.yml
@@ -1243,7 +1247,7 @@ git commit -m "test: add Bearm fuzz and performance coverage"
 - Consumes: final commands, config schema, limitations, and release artifact naming.
 - Produces: install, alias, recovery, security, contribution, and man-page documentation.
 
-- [ ] **Step 1: Replace README with final user documentation**
+- [x] **Step 1: Replace README with final user documentation**
 
 `README.md` must contain these exact top-level sections:
 
@@ -1282,7 +1286,7 @@ command rm
 /bin/rm
 ```
 
-- [ ] **Step 2: Document architecture and compatibility**
+- [x] **Step 2: Document architecture and compatibility**
 
 Create `docs/architecture/overview.md` with:
 
@@ -1302,7 +1306,7 @@ Create `docs/compatibility/gnu.md` and `docs/compatibility/bsd.md` with:
 - hard Bearm protections that remain stricter than host `rm`;
 - host versions used by CI.
 
-- [ ] **Step 3: Document configuration and recovery**
+- [x] **Step 3: Document configuration and recovery**
 
 Create `docs/configuration.md` containing the exact version 1 TOML schema:
 
@@ -1342,7 +1346,7 @@ bearm doctor
 
 Explain that Finder **Put Back** is not guaranteed and Bearm restore is authoritative.
 
-- [ ] **Step 4: Document security and contribution rules**
+- [x] **Step 4: Document security and contribution rules**
 
 Create `docs/security.md` and `SECURITY.md` covering:
 
@@ -1365,7 +1369,7 @@ Create `CONTRIBUTING.md` with:
 - no AI attribution trailers;
 - compatibility fixture requirements for behavior changes.
 
-- [ ] **Step 5: Add the man page**
+- [x] **Step 5: Add the man page**
 
 Create `man/bearm.1` with sections:
 
@@ -1398,7 +1402,7 @@ Expected:
 The man page renders without roff errors.
 ```
 
-- [ ] **Step 6: Configure automatic Homebrew tap publishing**
+- [x] **Step 6: Configure automatic Homebrew tap publishing**
 
 Extend `.goreleaser.yaml` with:
 
@@ -1428,7 +1432,7 @@ add repository secret `HOMEBREW_TAP_GITHUB_TOKEN` with permission to update that
 tap. The release workflow must fail clearly when this secret is unavailable; it
 must not publish an incomplete formula.
 
-- [ ] **Step 7: Add changelog**
+- [x] **Step 7: Add changelog**
 
 Create `CHANGELOG.md`:
 
@@ -1452,7 +1456,7 @@ Versioning.
 - Secure TOML configuration and protected path patterns.
 ```
 
-- [ ] **Step 8: Run documentation link and command checks**
+- [x] **Step 8: Run documentation link and command checks**
 
 Run:
 
@@ -1493,7 +1497,7 @@ The marker scan prints no errors.
 Both commands succeed.
 ```
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add README.md docs man .goreleaser.yaml CHANGELOG.md CONTRIBUTING.md SECURITY.md
@@ -1517,7 +1521,7 @@ git commit -m "docs: document Bearm usage and recovery"
   - dependency and vulnerability scanning;
   - archives, checksums, SBOMs, and release notes.
 
-- [ ] **Step 1: Create the final acceptance script**
+- [x] **Step 1: Create the final acceptance script**
 
 Create `scripts/acceptance.sh`:
 
@@ -1560,7 +1564,7 @@ Expected:
 All installed verification tools exit 0.
 ```
 
-- [ ] **Step 2: Add release metadata and SBOM generation**
+- [x] **Step 2: Add release metadata and SBOM generation**
 
 Extend `.goreleaser.yaml`:
 
@@ -1590,7 +1594,7 @@ signs:
 
 Keep signing in release CI only; snapshot builds may skip signing when `cosign` identity is unavailable.
 
-- [ ] **Step 3: Add tag-triggered release workflow**
+- [x] **Step 3: Add tag-triggered release workflow**
 
 Create `.github/workflows/release.yml`:
 
@@ -1639,7 +1643,7 @@ jobs:
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
 ```
 
-- [ ] **Step 4: Add security workflow**
+- [x] **Step 4: Add security workflow**
 
 Create `.github/workflows/security.yml`:
 
@@ -1685,7 +1689,7 @@ jobs:
       - uses: github/codeql-action/analyze@v4
 ```
 
-- [ ] **Step 5: Require acceptance jobs in CI**
+- [x] **Step 5: Require acceptance jobs in CI**
 
 Ensure `.github/workflows/ci.yml` includes:
 
@@ -1707,7 +1711,7 @@ Ensure `.github/workflows/ci.yml` includes:
 
 Do not run GoReleaser in this job unless installed; the script already checks availability.
 
-- [ ] **Step 6: Run final local acceptance**
+- [x] **Step 6: Run final local acceptance**
 
 Run:
 
@@ -1724,7 +1728,7 @@ The working tree is clean after committing generated source changes.
 No release archive is committed.
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add scripts/acceptance.sh .github/workflows .goreleaser.yaml

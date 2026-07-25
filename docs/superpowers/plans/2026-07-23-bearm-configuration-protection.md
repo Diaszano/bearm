@@ -1,5 +1,9 @@
 # Bearm Configuration and Protection Implementation Plan
 
+**Status:** Complete
+**Completion date:** 2026-07-25
+**Implementation range:** `ac35fabc68158fb381d56a274b9238e110190531..01931408c25b55e95ae4dd12061ce11388b348f8`
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement secure TOML configuration, environment precedence, gitignore-compatible protected patterns, protected-descendant traversal, custom trash support, and native configuration commands.
@@ -90,7 +94,7 @@ Task 1 typed config and defaults
   - `config.Config.Validate() error`
   - exact TOML field names.
 
-- [ ] **Step 1: Write failing default and validation tests**
+- [x] **Step 1: Write failing default and validation tests**
 
 Create `internal/config/config_test.go`:
 
@@ -158,7 +162,7 @@ func TestValidateRejectsInvalidCollisionPolicy(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Implement typed configuration**
+- [x] **Step 2: Implement typed configuration**
 
 Create `internal/config/config.go`:
 
@@ -257,7 +261,7 @@ func (c Config) Validate() error {
 }
 ```
 
-- [ ] **Step 3: Run config tests**
+- [x] **Step 3: Run config tests**
 
 Run:
 
@@ -272,7 +276,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add internal/config/config.go internal/config/config_test.go
@@ -301,7 +305,7 @@ git commit -m "feat: define Bearm configuration"
     - `BEARM_TRASH_PER_MOUNT`
     - `BEARM_LOG`.
 
-- [ ] **Step 1: Write failing TOML loader tests**
+- [x] **Step 1: Write failing TOML loader tests**
 
 Create `internal/config/file_test.go`:
 
@@ -385,7 +389,7 @@ Add import:
 "reflect"
 ```
 
-- [ ] **Step 2: Write environment precedence tests**
+- [x] **Step 2: Write environment precedence tests**
 
 Create `internal/config/environment_test.go`:
 
@@ -433,7 +437,7 @@ func TestEnvironmentRejectsInvalidBoolean(t *testing.T) {
 }
 ```
 
-- [ ] **Step 3: Implement environment overrides**
+- [x] **Step 3: Implement environment overrides**
 
 Create `internal/config/environment.go`:
 
@@ -475,7 +479,7 @@ func ApplyEnvironment(value Config, getenv func(string) string) (Config, error) 
 }
 ```
 
-- [ ] **Step 4: Implement secure Unix ownership checks**
+- [x] **Step 4: Implement secure Unix ownership checks**
 
 Create `internal/config/ownership_unix.go`:
 
@@ -558,7 +562,7 @@ func TestCheckSecureFileRejectsGroupWritableFile(t *testing.T) {
 }
 ```
 
-- [ ] **Step 5: Implement strict TOML loading**
+- [x] **Step 5: Implement strict TOML loading**
 
 Create `internal/config/file.go`:
 
@@ -611,7 +615,7 @@ func IsMissing(err error) bool {
 }
 ```
 
-- [ ] **Step 6: Run config tests**
+- [x] **Step 6: Run config tests**
 
 Run:
 
@@ -627,7 +631,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add internal/config
@@ -652,7 +656,7 @@ git commit -m "feat: load Bearm configuration securely"
   - `(*PatternMatcher).Matches(absolutePath) bool`
   - pattern-aware `Policy.Check`.
 
-- [ ] **Step 1: Add the pattern dependency**
+- [x] **Step 1: Add the pattern dependency**
 
 Run:
 
@@ -667,7 +671,7 @@ Expected:
 go.mod and go.sum include go-gitignore.
 ```
 
-- [ ] **Step 2: Write failing pattern tests**
+- [x] **Step 2: Write failing pattern tests**
 
 Create `internal/safety/patterns_test.go`:
 
@@ -720,7 +724,7 @@ func TestPolicyRejectsProtectedPattern(t *testing.T) {
 }
 ```
 
-- [ ] **Step 3: Implement the matcher**
+- [x] **Step 3: Implement the matcher**
 
 Create `internal/safety/patterns.go`:
 
@@ -765,7 +769,7 @@ func (m *PatternMatcher) Matches(absolutePath string) bool {
 }
 ```
 
-- [ ] **Step 4: Extend the safety policy**
+- [x] **Step 4: Extend the safety policy**
 
 Add to `safety.Config`:
 
@@ -800,7 +804,7 @@ func (p *Policy) InspectDescendants() bool {
 }
 ```
 
-- [ ] **Step 5: Run pattern and policy tests**
+- [x] **Step 5: Run pattern and policy tests**
 
 Run:
 
@@ -815,7 +819,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add go.mod go.sum internal/safety
@@ -840,7 +844,7 @@ git commit -m "feat: protect configured path patterns"
   - child-first planned targets;
   - blocked protected paths and ancestor directories.
 
-- [ ] **Step 1: Write failing protected-walk tests**
+- [x] **Step 1: Write failing protected-walk tests**
 
 Create `internal/planner/protected_walk_test.go`:
 
@@ -937,7 +941,7 @@ func TestExpandTargetVerbosePlansEveryEntry(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Implement protected traversal expansion**
+- [x] **Step 2: Implement protected traversal expansion**
 
 Create `internal/planner/protected_walk.go`:
 
@@ -1055,7 +1059,7 @@ func isEqualOrDescendant(path, root string) bool {
 }
 ```
 
-- [ ] **Step 3: Mark verbose and protected inspection as traversal-required**
+- [x] **Step 3: Mark verbose and protected inspection as traversal-required**
 
 Change `requiresWalk` in `internal/planner/planner.go` to accept the policy:
 
@@ -1081,7 +1085,7 @@ Update its caller:
 RequiresWalk: requiresWalk(kind, request.Options, p.policy),
 ```
 
-- [ ] **Step 4: Expand traversal-required targets during planning**
+- [x] **Step 4: Expand traversal-required targets during planning**
 
 After constructing a `PlannedTarget`, replace direct append with:
 
@@ -1108,7 +1112,7 @@ plan.Targets = append(plan.Targets, planned)
 
 Change skipped protected descendants from failures to non-failing results when the application combines planning outcomes. `RemovalResult.HasFailures` already ignores `ItemSkipped`.
 
-- [ ] **Step 5: Run planner and removal tests**
+- [x] **Step 5: Run planner and removal tests**
 
 Run:
 
@@ -1123,7 +1127,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Add an integration test proving protected content remains**
+- [x] **Step 6: Add an integration test proving protected content remains**
 
 Append to `internal/planner/protected_walk_test.go`:
 
@@ -1178,7 +1182,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add internal/planner
@@ -1197,7 +1201,7 @@ git commit -m "feat: retain protected recursive descendants"
   - `custom.Backend`
   - implementation of `domain.TrashBackend`.
 
-- [ ] **Step 1: Write failing custom-backend tests**
+- [x] **Step 1: Write failing custom-backend tests**
 
 Create `internal/trash/custom/backend_test.go`:
 
@@ -1266,7 +1270,7 @@ func TestNewBackendRejectsRelativeRoot(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Implement custom backend**
+- [x] **Step 2: Implement custom backend**
 
 Create `internal/trash/custom/backend.go`:
 
@@ -1382,7 +1386,7 @@ func (b *Backend) Move(
 }
 ```
 
-- [ ] **Step 3: Run custom backend tests**
+- [x] **Step 3: Run custom backend tests**
 
 Run:
 
@@ -1397,7 +1401,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add internal/trash/custom
@@ -1425,7 +1429,7 @@ git commit -m "feat: add custom trash backend"
   - `bearm config check`;
   - config-driven language, profile, trash, safety, and restore policy.
 
-- [ ] **Step 1: Extend application dependencies with config path and values**
+- [x] **Step 1: Extend application dependencies with config path and values**
 
 Add to `internal/app/dependencies.go`:
 
@@ -1440,7 +1444,7 @@ Add import:
 "github.com/Diaszano/bearm/internal/config"
 ```
 
-- [ ] **Step 2: Implement native config commands**
+- [x] **Step 2: Implement native config commands**
 
 In `internal/app/app.go`, handle `cli.CommandConfig` before requiring the repository:
 
@@ -1464,7 +1468,7 @@ if request.Command == cli.CommandConfig {
 }
 ```
 
-- [ ] **Step 3: Use configured compatibility profile**
+- [x] **Step 3: Use configured compatibility profile**
 
 Change profile resolution so explicit config is used before host auto-detection:
 
@@ -1498,7 +1502,7 @@ profile := resolveConfiguredProfile(
 )
 ```
 
-- [ ] **Step 4: Assemble configuration in `main`**
+- [x] **Step 4: Assemble configuration in `main`**
 
 In `cmd/bearm/main.go`, after resolving platform directories:
 
@@ -1557,7 +1561,7 @@ Add import:
 "github.com/Diaszano/bearm/internal/config"
 ```
 
-- [ ] **Step 5: Implement configured backend factory**
+- [x] **Step 5: Implement configured backend factory**
 
 Add a cross-platform function to `internal/app/dependencies.go`:
 
@@ -1605,7 +1609,7 @@ _ = settings
 
 Delete `NewPlatformBackend` because `NewConfiguredBackend` replaces it.
 
-- [ ] **Step 6: Use configured restore collision policy**
+- [x] **Step 6: Use configured restore collision policy**
 
 In `runRestore`, map the configured value:
 
@@ -1619,7 +1623,7 @@ service := restore.NewService(a.dependencies.Repository, time.Now)
 results := service.Restore(ctx, records, policy)
 ```
 
-- [ ] **Step 7: Add config command integration tests**
+- [x] **Step 7: Add config command integration tests**
 
 Add to `internal/app/app_test.go`:
 
@@ -1681,7 +1685,7 @@ Add import:
 "github.com/Diaszano/bearm/internal/config"
 ```
 
-- [ ] **Step 8: Run complete verification**
+- [x] **Step 8: Run complete verification**
 
 Run:
 
@@ -1698,7 +1702,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add cmd/bearm internal/app

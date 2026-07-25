@@ -1,5 +1,7 @@
 # Bearm Implementation Plan Index
 
+**Status:** Complete
+
 **Date:** 2026-07-23  
 **Specification:** [`../specs/2026-07-23-bearm-design.md`](../specs/2026-07-23-bearm-design.md)
 
@@ -213,6 +215,7 @@ The project must never install over `/bin/rm` automatically.
 | Pull-request CI | https://github.com/Diaszano/bearm/actions/runs/30166805709 |
 | Security | https://github.com/Diaszano/bearm/actions/runs/30166805708 |
 | Release Readiness | https://github.com/Diaszano/bearm/actions/runs/30166806258 |
+| Documentation CI | https://github.com/Diaszano/bearm/actions/runs/30167038343 |
 
 The readiness run proved four platform archives and four archive SBOMs, the
 source archive, checksum, verified Sigstore bundle, and locally generated

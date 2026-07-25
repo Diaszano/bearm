@@ -1,5 +1,9 @@
 # Bearm Foundation Implementation Plan
 
+**Status:** Complete
+**Completion date:** 2026-07-25
+**Implementation range:** `ac35fabc68158fb381d56a274b9238e110190531..01931408c25b55e95ae4dd12061ce11388b348f8`
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Create a buildable, testable Bearm Go repository with stable domain contracts, platform directory resolution, version reporting, and dependency assembly.
@@ -75,7 +79,7 @@ Task 1 repository/toolchain
 - Consumes: none.
 - Produces: Go module `github.com/Diaszano/bearm`, standard verification commands, and repository conventions used by every later task.
 
-- [ ] **Step 1: Create the Go module**
+- [x] **Step 1: Create the Go module**
 
 Create `go.mod`:
 
@@ -87,7 +91,7 @@ go 1.24.0
 require github.com/pelletier/go-toml/v2 v2.2.3
 ```
 
-- [ ] **Step 2: Create repository ignore rules**
+- [x] **Step 2: Create repository ignore rules**
 
 Create `.gitignore`:
 
@@ -102,7 +106,7 @@ coverage.html
 .vscode/
 ```
 
-- [ ] **Step 3: Create deterministic development commands**
+- [x] **Step 3: Create deterministic development commands**
 
 Create `Makefile`:
 
@@ -141,7 +145,7 @@ clean:
 	rm -rf bin dist coverage.out coverage.html
 ```
 
-- [ ] **Step 4: Add lint configuration**
+- [x] **Step 4: Add lint configuration**
 
 Create `.golangci.yml`:
 
@@ -171,7 +175,7 @@ issues:
   exclude-use-default: false
 ```
 
-- [ ] **Step 5: Add the MIT license**
+- [x] **Step 5: Add the MIT license**
 
 Create `LICENSE` with the standard MIT license text and copyright:
 
@@ -199,7 +203,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-- [ ] **Step 6: Add the initial README**
+- [x] **Step 6: Add the initial README**
 
 Create `README.md`:
 
@@ -231,7 +235,7 @@ make build
 - Bearm has no telemetry and performs no network requests.
 ````
 
-- [ ] **Step 7: Resolve dependencies**
+- [x] **Step 7: Resolve dependencies**
 
 Run:
 
@@ -245,7 +249,7 @@ Expected:
 go.sum is created and go.mod remains valid.
 ```
 
-- [ ] **Step 8: Verify repository metadata**
+- [x] **Step 8: Verify repository metadata**
 
 Run:
 
@@ -259,7 +263,7 @@ Expected:
 all modules verified
 ```
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add go.mod go.sum .gitignore Makefile .golangci.yml LICENSE README.md
@@ -286,7 +290,7 @@ git commit -m "chore: initialize Bearm Go module"
   - `domain.TrashRecord`
   - `domain.TrashBackend`
 
-- [ ] **Step 1: Write failing validation tests**
+- [x] **Step 1: Write failing validation tests**
 
 Create `internal/domain/removal_test.go`:
 
@@ -349,7 +353,7 @@ func TestRemoveRequestValidateAcceptsMissingOperandsWithForce(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run the tests and verify failure**
+- [x] **Step 2: Run the tests and verify failure**
 
 Run:
 
@@ -363,7 +367,7 @@ Expected:
 FAIL because package internal/domain or RemoveRequest does not exist.
 ```
 
-- [ ] **Step 3: Implement removal domain types**
+- [x] **Step 3: Implement removal domain types**
 
 Create `internal/domain/removal.go`:
 
@@ -479,7 +483,7 @@ type RemovalPlan struct {
 }
 ```
 
-- [ ] **Step 4: Define trash records and backend interface**
+- [x] **Step 4: Define trash records and backend interface**
 
 Create `internal/domain/trash.go`:
 
@@ -521,7 +525,7 @@ type TrashBackend interface {
 }
 ```
 
-- [ ] **Step 5: Run domain tests**
+- [x] **Step 5: Run domain tests**
 
 Run:
 
@@ -535,7 +539,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Format and vet**
+- [x] **Step 6: Format and vet**
 
 Run:
 
@@ -550,7 +554,7 @@ Expected:
 No output and exit code 0.
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add internal/domain
@@ -569,7 +573,7 @@ git commit -m "feat: define Bearm domain contracts"
   - `platform.Dirs`
   - `platform.ResolveDirs(getenv, home, goos)`
 
-- [ ] **Step 1: Write failing directory-resolution tests**
+- [x] **Step 1: Write failing directory-resolution tests**
 
 Create `internal/platform/dirs_test.go`:
 
@@ -636,7 +640,7 @@ func TestResolveDirsRejectsRelativeOverride(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run:
 
@@ -650,7 +654,7 @@ Expected:
 FAIL because ResolveDirs does not exist.
 ```
 
-- [ ] **Step 3: Implement directory resolution**
+- [x] **Step 3: Implement directory resolution**
 
 Create `internal/platform/dirs.go`:
 
@@ -728,7 +732,7 @@ func applyAbsoluteOverride(value, fallback string) (string, error) {
 }
 ```
 
-- [ ] **Step 4: Run and format tests**
+- [x] **Step 4: Run and format tests**
 
 Run:
 
@@ -743,7 +747,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/platform
@@ -763,7 +767,7 @@ git commit -m "feat: resolve Bearm platform directories"
   - `buildinfo.Current()`
   - `buildinfo.Info.String()`
 
-- [ ] **Step 1: Write failing build-info tests**
+- [x] **Step 1: Write failing build-info tests**
 
 Create `internal/buildinfo/buildinfo_test.go`:
 
@@ -801,7 +805,7 @@ func TestCurrentUsesDevelopmentDefaults(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run:
 
@@ -815,7 +819,7 @@ Expected:
 FAIL because package internal/buildinfo does not exist.
 ```
 
-- [ ] **Step 3: Implement build information**
+- [x] **Step 3: Implement build information**
 
 Create `internal/buildinfo/buildinfo.go`:
 
@@ -853,7 +857,7 @@ func (i Info) String() string {
 }
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run:
 
@@ -868,7 +872,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/buildinfo
@@ -895,7 +899,7 @@ git commit -m "feat: expose Bearm build information"
   - `(*app.App).Run(context.Context, []string) int`
   - working `bearm version`
 
-- [ ] **Step 1: Write failing application tests**
+- [x] **Step 1: Write failing application tests**
 
 Create `internal/app/app_test.go`:
 
@@ -949,7 +953,7 @@ func TestRunUnknownCommand(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run:
 
@@ -963,7 +967,7 @@ Expected:
 FAIL because app.New and App.Run do not exist.
 ```
 
-- [ ] **Step 3: Implement the application shell**
+- [x] **Step 3: Implement the application shell**
 
 Create `internal/app/app.go`:
 
@@ -1009,7 +1013,7 @@ func (a *App) Run(_ context.Context, argv []string) int {
 }
 ```
 
-- [ ] **Step 4: Add the executable composition root**
+- [x] **Step 4: Add the executable composition root**
 
 Create `cmd/bearm/main.go`:
 
@@ -1035,7 +1039,7 @@ func main() {
 }
 ```
 
-- [ ] **Step 5: Run the application tests and binary**
+- [x] **Step 5: Run the application tests and binary**
 
 Run:
 
@@ -1051,7 +1055,7 @@ Expected final output:
 Bearm dev (none, unknown)
 ```
 
-- [ ] **Step 6: Add CI**
+- [x] **Step 6: Add CI**
 
 Create `.github/workflows/ci.yml`:
 
@@ -1103,7 +1107,7 @@ jobs:
           args: release --snapshot --clean
 ```
 
-- [ ] **Step 7: Add GoReleaser configuration**
+- [x] **Step 7: Add GoReleaser configuration**
 
 Create `.goreleaser.yaml`:
 
@@ -1153,7 +1157,7 @@ changelog:
   use: github-native
 ```
 
-- [ ] **Step 8: Add a snapshot target**
+- [x] **Step 8: Add a snapshot target**
 
 Append to `Makefile`:
 
@@ -1164,7 +1168,7 @@ snapshot:
 	goreleaser release --snapshot --clean
 ```
 
-- [ ] **Step 9: Run complete verification**
+- [x] **Step 9: Run complete verification**
 
 Run:
 
@@ -1181,7 +1185,7 @@ All verification commands exit 0.
 The final command prints Bearm development build information.
 ```
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add cmd internal/app .github/workflows/ci.yml .goreleaser.yaml Makefile

@@ -1,5 +1,9 @@
 # Bearm Removal Engine Implementation Plan
 
+**Status:** Complete
+**Completion date:** 2026-07-25
+**Implementation range:** `ac35fabc68158fb381d56a274b9238e110190531..01931408c25b55e95ae4dd12061ce11388b348f8`
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement Bearm's hard safety policy, filesystem planner, interactive prompt engine, sequential executor, and compatibility-mode application flow.
@@ -90,7 +94,7 @@ Task 1 IDs and result types
   - `domain.RemovalResult`
   - `domain.RemovalResult.ExitCode(profile) int`
 
-- [ ] **Step 1: Write failing ID tests**
+- [x] **Step 1: Write failing ID tests**
 
 Create `internal/id/generator_test.go`:
 
@@ -136,7 +140,7 @@ func TestNewReturnsUniqueValues(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Implement cryptographic IDs**
+- [x] **Step 2: Implement cryptographic IDs**
 
 Create `internal/id/generator.go`:
 
@@ -159,7 +163,7 @@ func New() (string, error) {
 }
 ```
 
-- [ ] **Step 3: Write failing result tests**
+- [x] **Step 3: Write failing result tests**
 
 Create `internal/domain/result_test.go`:
 
@@ -213,7 +217,7 @@ func TestRemovalResultHasFailures(t *testing.T) {
 }
 ```
 
-- [ ] **Step 4: Implement result types**
+- [x] **Step 4: Implement result types**
 
 Create `internal/domain/result.go`:
 
@@ -267,7 +271,7 @@ func (r RemovalResult) ExitCode(_ CompatibilityProfile) int {
 }
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run:
 
@@ -282,7 +286,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add internal/id internal/domain/result.go internal/domain/result_test.go
@@ -302,7 +306,7 @@ git commit -m "feat: add Bearm operation results"
   - `safety.NewPolicy(config) (*Policy, error)`
   - `(*Policy).Check(path string) error`
 
-- [ ] **Step 1: Write failing safety tests**
+- [x] **Step 1: Write failing safety tests**
 
 Create `internal/safety/policy_test.go`:
 
@@ -390,7 +394,7 @@ func TestPolicyDoesNotResolveFinalSymlinkLexically(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run:
 
@@ -404,7 +408,7 @@ Expected:
 FAIL because package internal/safety does not exist.
 ```
 
-- [ ] **Step 3: Implement the safety policy**
+- [x] **Step 3: Implement the safety policy**
 
 Create `internal/safety/policy.go`:
 
@@ -506,7 +510,7 @@ func isEqualOrDescendant(path, root string) bool {
 }
 ```
 
-- [ ] **Step 4: Run safety tests**
+- [x] **Step 4: Run safety tests**
 
 Run:
 
@@ -521,7 +525,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/safety
@@ -546,7 +550,7 @@ git commit -m "feat: enforce Bearm hard path protections"
   - `planner.New(policy, idGenerator)`
   - `(*Planner).Plan(ctx, request) (domain.RemovalPlan, []domain.ItemResult)`
 
-- [ ] **Step 1: Write failing planner tests**
+- [x] **Step 1: Write failing planner tests**
 
 Create `internal/planner/planner_test.go`:
 
@@ -675,7 +679,7 @@ func TestPlanRejectsDirectoryWithoutRecursiveOrDirectoryOption(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run:
 
@@ -689,7 +693,7 @@ Expected:
 FAIL because package internal/planner does not exist.
 ```
 
-- [ ] **Step 3: Implement the planner**
+- [x] **Step 3: Implement the planner**
 
 Create `internal/planner/planner.go`:
 
@@ -864,7 +868,7 @@ func failed(path string, err error) domain.ItemResult {
 }
 ```
 
-- [ ] **Step 4: Replace string-based EOF handling with `io.EOF`**
+- [x] **Step 4: Replace string-based EOF handling with `io.EOF`**
 
 In `internal/planner/planner.go`, add:
 
@@ -905,7 +909,7 @@ func directoryEmpty(path string) (bool, error) {
 }
 ```
 
-- [ ] **Step 5: Add GNU `--preserve-root=all` tests**
+- [x] **Step 5: Add GNU `--preserve-root=all` tests**
 
 Create `internal/planner/preserve_root_test.go`:
 
@@ -960,7 +964,7 @@ func TestValidatePreserveRootAllAllowsRegularFile(t *testing.T) {
 }
 ```
 
-- [ ] **Step 6: Implement GNU preserve-root-all validation**
+- [x] **Step 6: Implement GNU preserve-root-all validation**
 
 Create `internal/planner/preserve_root.go`:
 
@@ -1030,7 +1034,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 7: Add deterministic traversal helper tests**
+- [x] **Step 7: Add deterministic traversal helper tests**
 
 Create `internal/planner/walk_test.go`:
 
@@ -1077,7 +1081,7 @@ func TestWalkDepthFirstDoesNotFollowSymlinks(t *testing.T) {
 }
 ```
 
-- [ ] **Step 8: Implement deterministic depth-first traversal**
+- [x] **Step 8: Implement deterministic depth-first traversal**
 
 Create `internal/planner/walk.go`:
 
@@ -1139,7 +1143,7 @@ func WalkDepthFirst(root string, rootDevice uint64, oneFileSystem bool) ([]strin
 }
 ```
 
-- [ ] **Step 9: Run planner tests**
+- [x] **Step 9: Run planner tests**
 
 Run:
 
@@ -1154,7 +1158,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add internal/planner
@@ -1175,7 +1179,7 @@ git commit -m "feat: plan safe trash operations"
   - `(*Prompter).ConfirmOnce(plan) (bool, error)`
   - `(*Prompter).ConfirmTarget(path) (bool, error)`
 
-- [ ] **Step 1: Write failing prompt tests**
+- [x] **Step 1: Write failing prompt tests**
 
 Create `internal/removal/prompt_test.go`:
 
@@ -1284,7 +1288,7 @@ func TestNeedsOncePrompt(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Implement prompt behavior**
+- [x] **Step 2: Implement prompt behavior**
 
 Create `internal/removal/prompt.go`:
 
@@ -1345,7 +1349,7 @@ func (p *Prompter) readYes() (bool, error) {
 }
 ```
 
-- [ ] **Step 3: Run prompt tests**
+- [x] **Step 3: Run prompt tests**
 
 Run:
 
@@ -1360,7 +1364,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add internal/removal/prompt.go internal/removal/prompt_test.go
@@ -1387,7 +1391,7 @@ git commit -m "feat: add rm-compatible prompts"
   - `removal.Journal`
   - `(*Executor).Execute(ctx, plan) domain.RemovalResult`
 
-- [ ] **Step 1: Create deterministic test doubles**
+- [x] **Step 1: Create deterministic test doubles**
 
 Create `internal/testutil/backend.go`:
 
@@ -1470,7 +1474,7 @@ func (j *Journal) Append(_ context.Context, records []domain.TrashRecord) error 
 }
 ```
 
-- [ ] **Step 2: Write failing executor tests**
+- [x] **Step 2: Write failing executor tests**
 
 Create `internal/removal/executor_test.go`:
 
@@ -1629,7 +1633,7 @@ func TestExecuteReportsJournalFailure(t *testing.T) {
 }
 ```
 
-- [ ] **Step 3: Implement the executor**
+- [x] **Step 3: Implement the executor**
 
 Create `internal/removal/executor.go`:
 
@@ -1761,7 +1765,7 @@ func (e *Executor) Execute(ctx context.Context, plan domain.RemovalPlan) domain.
 }
 ```
 
-- [ ] **Step 4: Run executor tests**
+- [x] **Step 4: Run executor tests**
 
 Run:
 
@@ -1776,7 +1780,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 5: Run race tests**
+- [x] **Step 5: Run race tests**
 
 Run:
 
@@ -1790,7 +1794,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add internal/removal internal/testutil
@@ -1817,7 +1821,7 @@ git commit -m "feat: execute safe removal plans"
   - `app.NewWithDependencies`
   - functional compatibility-mode removal.
 
-- [ ] **Step 1: Define dependency assembly contracts**
+- [x] **Step 1: Define dependency assembly contracts**
 
 Create `internal/app/dependencies.go`:
 
@@ -1838,7 +1842,7 @@ type Dependencies struct {
 }
 ```
 
-- [ ] **Step 2: Add a compatibility removal application test**
+- [x] **Step 2: Add a compatibility removal application test**
 
 Add to `internal/app/app_test.go`:
 
@@ -1889,7 +1893,7 @@ Add the required imports:
 "github.com/Diaszano/bearm/internal/testutil"
 ```
 
-- [ ] **Step 3: Refactor App constructors**
+- [x] **Step 3: Refactor App constructors**
 
 Update `internal/app/app.go` so `App` includes:
 
@@ -1922,7 +1926,7 @@ func NewWithDependencies(
 }
 ```
 
-- [ ] **Step 4: Execute the parsed request**
+- [x] **Step 4: Execute the parsed request**
 
 In `runCompatibility`, replace the final `return 0` with:
 
@@ -1971,7 +1975,7 @@ Add imports:
 "github.com/Diaszano/bearm/internal/removal"
 ```
 
-- [ ] **Step 5: Add platform backend factories**
+- [x] **Step 5: Add platform backend factories**
 
 Create `internal/app/backend_linux.go`:
 
@@ -2034,7 +2038,7 @@ func newPlatformBackend(home string) domain.TrashBackend {
 
 Backend ID generation returns errors directly; a random-source failure aborts the move before the reservation is committed.
 
-- [ ] **Step 6: Run application tests**
+- [x] **Step 6: Run application tests**
 
 Run:
 
@@ -2050,7 +2054,7 @@ Expected:
 PASS
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add internal/app
