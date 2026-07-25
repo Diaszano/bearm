@@ -40,6 +40,9 @@ func (r CompatibilityRenderer) Usage() string {
 
 // MissingOperand renders a missing operand diagnostic.
 func (r CompatibilityRenderer) MissingOperand() string {
+	if r.profile == domain.ProfileBSD {
+		return ""
+	}
 	if r.language == i18n.LanguagePTBR {
 		if r.profile == domain.ProfileGNU {
 			return fmt.Sprintf("%s: operando ausente\nExperimente '%s --help' para mais informações.\n", r.program, r.program)

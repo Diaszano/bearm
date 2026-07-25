@@ -28,6 +28,15 @@ func TestBSDRendererUsage(t *testing.T) {
 	}
 }
 
+func TestBSDRendererMissingOperandUsesUsageOnly(t *testing.T) {
+	t.Parallel()
+
+	renderer := cli.NewCompatibilityRenderer(domain.ProfileBSD, i18n.LanguageEN, "rm")
+	if got := renderer.MissingOperand(); got != "" {
+		t.Fatalf("MissingOperand() = %q, want empty diagnostic before BSD usage", got)
+	}
+}
+
 func TestGNURendererUnrecognizedLongOption(t *testing.T) {
 	t.Parallel()
 
