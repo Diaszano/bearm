@@ -57,11 +57,14 @@ for artifact in \
   bearm_linux_arm64.tar.gz.sbom.json \
   bearm_darwin_amd64.tar.gz.sbom.json \
   bearm_darwin_arm64.tar.gz.sbom.json \
-  checksums.txt.sigstore.json \
-  bearm.rb
+  checksums.txt.sigstore.json
 do
   printf 'fixture\n' > "$fixture/dist/$artifact"
 done
+
+mkdir -p "$fixture/dist/homebrew/Casks" "$fixture/dist/bearm_linux_amd64_v1"
+printf 'fixture\n' > "$fixture/dist/homebrew/Casks/bearm.rb"
+printf 'fixture\n' > "$fixture/dist/bearm_linux_amd64_v1/bearm"
 
 cat > "$fixture/dist/artifacts.json" <<'JSON'
 [
@@ -76,7 +79,8 @@ cat > "$fixture/dist/artifacts.json" <<'JSON'
   {"name":"bearm_darwin_amd64.tar.gz.sbom.json","path":"dist/bearm_darwin_amd64.tar.gz.sbom.json","type":"SBOM"},
   {"name":"bearm_darwin_arm64.tar.gz.sbom.json","path":"dist/bearm_darwin_arm64.tar.gz.sbom.json","type":"SBOM"},
   {"name":"checksums.txt.sigstore.json","path":"dist/checksums.txt.sigstore.json","type":"Signature"},
-  {"name":"bearm.rb","path":"dist/bearm.rb","type":"Homebrew Cask"}
+  {"name":"bearm","path":"dist/bearm_linux_amd64_v1/bearm","goos":"linux","goarch":"amd64","type":"Binary"},
+  {"name":"bearm.rb","path":"dist/homebrew/Casks/bearm.rb","type":"Homebrew Cask"}
 ]
 JSON
 
@@ -109,6 +113,16 @@ jq 'map(if .name == "bearm_linux_amd64.tar.gz" then .path = "dist/../outside.txt
   "$valid_manifest" > "$manifest"
 if (cd "$fixture" && "$verifier" dist >/dev/null 2>&1); then
   echo "traversal artifact path unexpectedly passed" >&2
+  exit 1
+fi
+
+cp "$valid_manifest" "$manifest"
+mkdir -p "$fixture/dist/unapproved/Casks"
+cp "$fixture/dist/homebrew/Casks/bearm.rb" "$fixture/dist/unapproved/Casks/bearm.rb"
+jq 'map(if .type == "Homebrew Cask" then .path = "dist/unapproved/Casks/bearm.rb" else . end)' \
+  "$valid_manifest" > "$manifest"
+if (cd "$fixture" && "$verifier" dist >/dev/null 2>&1); then
+  echo "unexpected Homebrew cask path passed" >&2
   exit 1
 fi
 

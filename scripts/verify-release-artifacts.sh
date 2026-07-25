@@ -45,16 +45,36 @@ test "$archive_count" -eq 4
 test "$sbom_count" -eq 4
 
 jq -e --arg artifact_root "$artifact_root" '
+  def is_safe_path:
+    (.path | type == "string") and
+    (.path | startswith($artifact_root + "/")) and
+    (.path | split("/") | all(. != "." and . != ".."));
+  def is_root_file:
+    .path == ($artifact_root + "/" + .name);
   all(
     .[];
     (.name | type == "string") and
     (.name | test("^[^/]+$")) and
     (.name != "." and .name != "..") and
-    (.path == ($artifact_root + "/" + .name))
+    is_safe_path
   ) and
-  ([.[].path] | unique | length == length)
+  ([.[].path] | unique | length == length) and
+  all(
+    .[] | select(
+      .type == "Archive" or
+      .type == "Source" or
+      .type == "Checksum" or
+      .type == "SBOM" or
+      .type == "Signature"
+    );
+    is_root_file
+  ) and
+  all(
+    .[] | select(.type == "Homebrew Cask");
+    .path == ($artifact_root + "/homebrew/Casks/" + .name)
+  )
 ' "$manifest" >/dev/null || {
-  echo "artifact names and paths must be unique files directly under $artifact_root" >&2
+  echo "artifact paths must be unique, safe, and match their release artifact type" >&2
   exit 1
 }
 
