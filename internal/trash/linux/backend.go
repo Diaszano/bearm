@@ -6,7 +6,6 @@ package linux
 import (
 	"context"
 	"errors"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -106,7 +105,7 @@ func (b *Backend) Move(
 	}
 	defer func() { _ = reservation.Rollback() }()
 
-	if err := os.Rename(target.AbsolutePath, reservation.TargetPath); err != nil {
+	if err := trash.RenameNoReplace(target.AbsolutePath, reservation.TargetPath); err != nil {
 		return domain.TrashRecord{}, err
 	}
 
