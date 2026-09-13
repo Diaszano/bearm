@@ -20,7 +20,7 @@ func TestPurgeRequiresConfirmation(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	purger := restore.NewPurger(&testutil.Journal{}, time.Now)
+	purger := restore.NewPurger(&testutil.Journal{}, time.Now, nil)
 	results := purger.Purge(context.Background(), []domain.TrashRecord{{
 		ItemID: "item-1", OperationID: "operation-1", TrashedPath: path,
 	}}, false)
@@ -42,7 +42,7 @@ func TestPurgeRemovesTargetAndAppendsEvent(t *testing.T) {
 	}
 
 	journal := &testutil.Journal{}
-	purger := restore.NewPurger(journal, time.Now)
+	purger := restore.NewPurger(journal, time.Now, nil)
 	results := purger.Purge(context.Background(), []domain.TrashRecord{{
 		SchemaVersion: 1,
 		ItemID:        "item-1", OperationID: "operation-1", TrashedPath: path,

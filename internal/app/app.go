@@ -326,7 +326,7 @@ func (a *App) runPurge(ctx context.Context, request cli.NativeRequest) int {
 		}
 	}
 
-	purger := restore.NewPurger(a.dependencies.Repository, time.Now)
+	purger := restore.NewPurger(a.dependencies.Repository, time.Now, nil)
 	results := purger.Purge(ctx, records, confirmed)
 	return renderNativeResults(a.out, a.err, results)
 }

@@ -8,17 +8,19 @@ import (
 	"time"
 
 	"github.com/Diaszano/bearm/internal/domain"
+	"github.com/Diaszano/bearm/internal/pathutil"
 )
 
 // Purger permanently removes explicitly selected trash items.
 type Purger struct {
-	journal EventAppender
-	clock   func() time.Time
+	journal    EventAppender
+	clock      func() time.Time
+	trashRoots []string
 }
 
 // NewPurger creates a permanent purge service.
-func NewPurger(journal EventAppender, clock func() time.Time) *Purger {
-	return &Purger{journal: journal, clock: clock}
+func NewPurger(journal EventAppender, clock func() time.Time, trashRoots []string) *Purger {
+	return &Purger{journal: journal, clock: clock, trashRoots: trashRoots}
 }
 
 // Purge permanently removes records only when confirmed is true.
@@ -42,6 +44,10 @@ func (p *Purger) Purge(
 			results = append(results, failed(record.TrashedPath, err))
 			break
 		}
+		if !isInsideTrash(record.TrashedPath, p.trashRoots) {
+			results = append(results, failed(record.TrashedPath, errors.New("trashed path is outside known trash roots")))
+			continue
+		}
 		if err := os.RemoveAll(record.TrashedPath); err != nil {
 			results = append(results, failed(record.TrashedPath, err))
 			continue
@@ -62,4 +68,16 @@ func (p *Purger) Purge(
 	}
 
 	return results
+}
+
+func isInsideTrash(path string, roots []string) bool {
+	if len(roots) == 0 {
+		return true
+	}
+	for _, root := range roots {
+		if pathutil.IsEqualOrDescendant(path, root) {
+			return true
+		}
+	}
+	return false
 }
