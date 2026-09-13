@@ -26,7 +26,7 @@ fmt-check:
 lint:
 	golangci-lint run ./...
 
-verify: fmt-check vet test test-race
+verify: fmt-check vet lint test test-race
 
 clean:
 	rm -rf bin dist coverage.out coverage.html
