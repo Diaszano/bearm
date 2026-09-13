@@ -38,15 +38,18 @@ type App struct {
 }
 
 // New creates an application with default removal infrastructure.
-func New(stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) *App {
+func New(stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) (*App, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		home = os.TempDir()
+		return nil, fmt.Errorf("cannot determine home directory: %w", err)
 	}
 	defaultConfig := config.Default()
 	backend := newPlatformBackend(home, defaultConfig)
 
-	dirs, _ := platform.ResolveDirs(os.Getenv, home, runtime.GOOS)
+	dirs, err := platform.ResolveDirs(os.Getenv, home, runtime.GOOS)
+	if err != nil {
+		return nil, fmt.Errorf("cannot resolve platform directories: %w", err)
+	}
 
 	var homeTrash string
 	if runtime.GOOS == "darwin" {
@@ -74,7 +77,7 @@ func New(stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) *App {
 		Policy:     policy,
 		Config:     defaultConfig,
 		ConfigPath: filepath.Join(dirs.ConfigRoot, "config.toml"),
-	})
+	}), nil
 }
 
 func ignoreWrite(_ int, _ error) {}

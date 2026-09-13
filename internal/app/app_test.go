@@ -22,11 +22,14 @@ func TestRunVersion(t *testing.T) {
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Info{
+	instance, err := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Info{
 		Version: "1.0.0",
 		Commit:  "abcdef0",
 		Date:    "2026-07-23T12:00:00Z",
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	code := instance.Run(context.Background(), []string{"bearm", "version"})
 	if code != 0 {
@@ -42,7 +45,10 @@ func TestRunRMForceWithoutOperandsReturnsSuccess(t *testing.T) {
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+	instance, err := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	code := instance.Run(context.Background(), []string{"rm", "-f"})
 	if code != 0 {
@@ -55,7 +61,10 @@ func TestRunRMMissingOperandReturnsGNUFailure(t *testing.T) {
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+	instance, err := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+	if err != nil {
+		t.Fatal(err)
+	}
 	instance.getenv = func(key string) string {
 		switch key {
 		case "BEARM_COMPAT":
@@ -81,7 +90,10 @@ func TestRunNativeUnknownCommandUsesPortuguese(t *testing.T) {
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+	instance, err := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+	if err != nil {
+		t.Fatal(err)
+	}
 	instance.getenv = func(key string) string {
 		if key == "BEARM_LANG" {
 			return "pt-BR"

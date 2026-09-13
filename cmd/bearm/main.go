@@ -29,7 +29,8 @@ func run() int {
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		home = os.TempDir()
+		fmt.Fprintf(os.Stderr, "bearm: cannot determine home directory: %v\n", err)
+		return 3
 	}
 
 	dirs, err := platform.ResolveDirs(os.Getenv, home, runtime.GOOS)
