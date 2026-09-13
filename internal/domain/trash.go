@@ -7,11 +7,13 @@ import (
 
 // Destination is a reserved trash destination.
 type Destination struct {
-	Root       string
-	FilesDir   string
-	InfoDir    string
-	TargetPath string
-	InfoPath   string
+	Root             string
+	FilesDir         string
+	InfoDir          string
+	TargetPath       string
+	InfoPath         string
+	MountPoint       string // populated by Resolve for backends that need it
+	RelativeInfoPath bool   // true when .trashinfo paths should be relative to mount
 }
 
 // TrashRecord describes one completed trash move.
