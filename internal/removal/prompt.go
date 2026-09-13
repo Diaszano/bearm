@@ -16,16 +16,6 @@ type PromptFormatter interface {
 	PromptTarget(path string) string
 }
 
-type defaultPromptFormatter struct{}
-
-func (defaultPromptFormatter) PromptOnce(domain.RemovalPlan) string {
-	return "rm: remove all arguments? "
-}
-
-func (defaultPromptFormatter) PromptTarget(path string) string {
-	return fmt.Sprintf("rm: remove %s? ", path)
-}
-
 // Prompter handles compatibility confirmation input and output.
 type Prompter struct {
 	reader    *bufio.Reader
@@ -34,12 +24,8 @@ type Prompter struct {
 }
 
 // NewPrompter creates a confirmation prompter.
-func NewPrompter(reader io.Reader, writer io.Writer, formatter ...PromptFormatter) *Prompter {
-	var f PromptFormatter = defaultPromptFormatter{}
-	if len(formatter) > 0 && formatter[0] != nil {
-		f = formatter[0]
-	}
-	return &Prompter{reader: bufio.NewReader(reader), writer: writer, formatter: f}
+func NewPrompter(reader io.Reader, writer io.Writer, formatter PromptFormatter) *Prompter {
+	return &Prompter{reader: bufio.NewReader(reader), writer: writer, formatter: formatter}
 }
 
 // NeedsOncePrompt reports whether -I requires one confirmation.
@@ -56,16 +42,13 @@ func NeedsOncePrompt(plan domain.RemovalPlan) bool {
 	return plan.Request.Options.Recursive
 }
 
-func (p *Prompter) getFormatter() PromptFormatter {
-	if p.formatter == nil {
-		return defaultPromptFormatter{}
-	}
-	return p.formatter
-}
-
 // ConfirmOnce asks for operation-level confirmation.
 func (p *Prompter) ConfirmOnce(plan domain.RemovalPlan) (bool, error) {
-	if _, err := fmt.Fprint(p.writer, p.getFormatter().PromptOnce(plan)); err != nil {
+	msg := "rm: remove all arguments? "
+	if p.formatter != nil {
+		msg = p.formatter.PromptOnce(plan)
+	}
+	if _, err := fmt.Fprint(p.writer, msg); err != nil {
 		return false, err
 	}
 	return p.readYes()
@@ -73,7 +56,11 @@ func (p *Prompter) ConfirmOnce(plan domain.RemovalPlan) (bool, error) {
 
 // ConfirmTarget asks for one target confirmation.
 func (p *Prompter) ConfirmTarget(path string) (bool, error) {
-	if _, err := fmt.Fprint(p.writer, p.getFormatter().PromptTarget(path)); err != nil {
+	msg := fmt.Sprintf("rm: remove %s? ", path)
+	if p.formatter != nil {
+		msg = p.formatter.PromptTarget(path)
+	}
+	if _, err := fmt.Fprint(p.writer, msg); err != nil {
 		return false, err
 	}
 	return p.readYes()

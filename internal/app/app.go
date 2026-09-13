@@ -270,7 +270,7 @@ func (a *App) runPurge(ctx context.Context, request cli.NativeRequest) int {
 
 	confirmed := request.Yes
 	if !confirmed {
-		prompter := removal.NewPrompter(a.stdin, a.err)
+		prompter := removal.NewPrompter(a.stdin, a.err, nil)
 		confirmed, err = prompter.ConfirmTarget("itens selecionados permanentemente")
 		if err != nil {
 			ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
