@@ -8,23 +8,18 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
 
 	"github.com/Diaszano/bearm/internal/buildinfo"
 	"github.com/Diaszano/bearm/internal/cli"
-	"github.com/Diaszano/bearm/internal/config"
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/i18n"
 	"github.com/Diaszano/bearm/internal/id"
-	"github.com/Diaszano/bearm/internal/journal"
 	"github.com/Diaszano/bearm/internal/planner"
-	"github.com/Diaszano/bearm/internal/platform"
 	"github.com/Diaszano/bearm/internal/removal"
 	"github.com/Diaszano/bearm/internal/restore"
-	"github.com/Diaszano/bearm/internal/safety"
 )
 
 // App is the Bearm application shell.
@@ -35,49 +30,6 @@ type App struct {
 	info         buildinfo.Info
 	getenv       func(string) string
 	dependencies Dependencies
-}
-
-// New creates an application with default removal infrastructure.
-func New(stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) (*App, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, fmt.Errorf("cannot determine home directory: %w", err)
-	}
-	defaultConfig := config.Default()
-	backend := newPlatformBackend(home, defaultConfig)
-
-	dirs, err := platform.ResolveDirs(os.Getenv, home, runtime.GOOS)
-	if err != nil {
-		return nil, fmt.Errorf("cannot resolve platform directories: %w", err)
-	}
-
-	var homeTrash string
-	if runtime.GOOS == "darwin" {
-		homeTrash = filepath.Join(home, ".Trash")
-	} else {
-		dataHome := os.Getenv("XDG_DATA_HOME")
-		if !filepath.IsAbs(dataHome) {
-			dataHome = filepath.Join(home, ".local", "share")
-		}
-		homeTrash = filepath.Join(dataHome, "Trash")
-	}
-
-	policy, _ := safety.NewPolicy(safety.Config{
-		HardProtectedRoots: []string{
-			dirs.ConfigRoot,
-			dirs.StateRoot,
-			homeTrash,
-		},
-	})
-	journalRepo := journal.New(filepath.Join(dirs.StateRoot, "journal.jsonl"), time.Now)
-	return NewWithDependencies(stdin, stdout, stderr, info, Dependencies{
-		Backend:    backend,
-		Journal:    journalRepo,
-		Repository: journalRepo,
-		Policy:     policy,
-		Config:     defaultConfig,
-		ConfigPath: filepath.Join(dirs.ConfigRoot, "config.toml"),
-	}), nil
 }
 
 func ignoreWrite(_ int, _ error) {}

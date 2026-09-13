@@ -3,8 +3,10 @@ package app
 import (
 	"bytes"
 	"context"
+	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -13,23 +15,46 @@ import (
 	"github.com/Diaszano/bearm/internal/config"
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/journal"
+	"github.com/Diaszano/bearm/internal/platform"
 	"github.com/Diaszano/bearm/internal/safety"
 	"github.com/Diaszano/bearm/internal/testutil"
 )
+
+func newDefaultApp(t *testing.T, stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) *App {
+	t.Helper()
+	home := t.TempDir()
+	dirs, err := platform.ResolveDirs(func(string) string { return "" }, home, runtime.GOOS)
+	if err != nil {
+		t.Fatalf("resolve dirs: %v", err)
+	}
+	repo := journal.New(filepath.Join(dirs.StateRoot, "journal.jsonl"), time.Now)
+	backend := &testutil.Backend{}
+	policy, err := safety.NewPolicy(safety.Config{
+		HardProtectedRoots: []string{dirs.ConfigRoot, dirs.StateRoot, dirs.DataRoot},
+	})
+	if err != nil {
+		t.Fatalf("new policy: %v", err)
+	}
+	return NewWithDependencies(stdin, stdout, stderr, info, Dependencies{
+		Backend:    backend,
+		Journal:    repo,
+		Repository: repo,
+		Policy:     policy,
+		Config:     config.Default(),
+		ConfigPath: filepath.Join(dirs.ConfigRoot, "config.toml"),
+	})
+}
 
 func TestRunVersion(t *testing.T) {
 	t.Parallel()
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance, err := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Info{
+	instance := newDefaultApp(t, strings.NewReader(""), &stdout, &stderr, buildinfo.Info{
 		Version: "1.0.0",
 		Commit:  "abcdef0",
 		Date:    "2026-07-23T12:00:00Z",
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	code := instance.Run(context.Background(), []string{"bearm", "version"})
 	if code != 0 {
@@ -45,10 +70,7 @@ func TestRunRMForceWithoutOperandsReturnsSuccess(t *testing.T) {
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance, err := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
-	if err != nil {
-		t.Fatal(err)
-	}
+	instance := newDefaultApp(t, strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
 
 	code := instance.Run(context.Background(), []string{"rm", "-f"})
 	if code != 0 {
@@ -61,10 +83,7 @@ func TestRunRMMissingOperandReturnsGNUFailure(t *testing.T) {
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance, err := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
-	if err != nil {
-		t.Fatal(err)
-	}
+	instance := newDefaultApp(t, strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
 	instance.getenv = func(key string) string {
 		switch key {
 		case "BEARM_COMPAT":
@@ -90,10 +109,7 @@ func TestRunNativeUnknownCommandUsesPortuguese(t *testing.T) {
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	instance, err := New(strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
-	if err != nil {
-		t.Fatal(err)
-	}
+	instance := newDefaultApp(t, strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
 	instance.getenv = func(key string) string {
 		if key == "BEARM_LANG" {
 			return "pt-BR"
