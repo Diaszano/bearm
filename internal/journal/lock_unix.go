@@ -12,6 +12,10 @@ func lockExclusive(file *os.File) error {
 	return unix.Flock(int(file.Fd()), unix.LOCK_EX)
 }
 
+func lockShared(file *os.File) error {
+	return unix.Flock(int(file.Fd()), unix.LOCK_SH)
+}
+
 func unlock(file *os.File) error {
 	return unix.Flock(int(file.Fd()), unix.LOCK_UN)
 }
