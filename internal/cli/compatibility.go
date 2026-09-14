@@ -102,36 +102,24 @@ func (s *compatibilityState) applyLongOption(option string) error {
 		s.request.Options.Directory = true
 	case "--verbose":
 		s.request.Options.Verbose = true
-	case "--one-file-system":
+	case "--one-file-system", "--preserve-root", "--preserve-root=all", "--no-preserve-root", "--help", "--version":
 		if s.profile != domain.ProfileGNU {
 			return &UsageError{Kind: "unsupported-option", Option: option}
 		}
-		s.request.Options.OneFileSystem = true
-	case "--preserve-root":
-		if s.profile != domain.ProfileGNU {
-			return &UsageError{Kind: "unsupported-option", Option: option}
+		switch option {
+		case "--one-file-system":
+			s.request.Options.OneFileSystem = true
+		case "--preserve-root":
+			s.request.Options.PreserveRoot = domain.PreserveRootDefault
+		case "--preserve-root=all":
+			s.request.Options.PreserveRoot = domain.PreserveRootAll
+		case "--no-preserve-root":
+			s.request.Options.PreserveRoot = domain.PreserveRootNone
+		case "--help":
+			s.request.Options.ShowHelp = true
+		case "--version":
+			s.request.Options.ShowVersion = true
 		}
-		s.request.Options.PreserveRoot = domain.PreserveRootDefault
-	case "--preserve-root=all":
-		if s.profile != domain.ProfileGNU {
-			return &UsageError{Kind: "unsupported-option", Option: option}
-		}
-		s.request.Options.PreserveRoot = domain.PreserveRootAll
-	case "--no-preserve-root":
-		if s.profile != domain.ProfileGNU {
-			return &UsageError{Kind: "unsupported-option", Option: option}
-		}
-		s.request.Options.PreserveRoot = domain.PreserveRootNone
-	case "--help":
-		if s.profile != domain.ProfileGNU {
-			return &UsageError{Kind: "unsupported-option", Option: option}
-		}
-		s.request.Options.ShowHelp = true
-	case "--version":
-		if s.profile != domain.ProfileGNU {
-			return &UsageError{Kind: "unsupported-option", Option: option}
-		}
-		s.request.Options.ShowVersion = true
 	default:
 		if strings.HasPrefix(option, "--interactive=") {
 			return s.applyInteractive(strings.TrimPrefix(option, "--interactive="))
