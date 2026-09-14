@@ -8,14 +8,6 @@ const (
 	MessageUnknownCommand Message = "unknown_command"
 	// MessageMissingOperand reports an empty compatibility operand list.
 	MessageMissingOperand Message = "missing_operand"
-	// MessageIllegalOption reports an unsupported short option.
-	MessageIllegalOption Message = "illegal_option"
-	// MessageUnrecognizedOption reports an unsupported long option.
-	MessageUnrecognizedOption Message = "unrecognized_option"
-	// MessageInvalidInteractive reports an invalid --interactive value.
-	MessageInvalidInteractive Message = "invalid_interactive"
-	// MessageNativeUsage is the native Bearm usage heading.
-	MessageNativeUsage Message = "native_usage"
 	// MessageMissingOperandTryHelp renders the 'try --help' suggestion.
 	MessageMissingOperandTryHelp Message = "missing_operand_try_help"
 )
@@ -31,10 +23,6 @@ func NewCatalog(language Language) Catalog {
 		return Catalog{messages: map[Message]string{
 			MessageUnknownCommand:        "comando desconhecido", //nolint:misspell // "comando" is Portuguese.
 			MessageMissingOperand:        "operando ausente",
-			MessageIllegalOption:         "opção ilegal",
-			MessageUnrecognizedOption:    "opção não reconhecida",
-			MessageInvalidInteractive:    "valor inválido para --interactive",
-			MessageNativeUsage:           "Uso: bearm <comando> [opções]", //nolint:misspell // "comando" is Portuguese.
 			MessageMissingOperandTryHelp: "Experimente '%s --help' para mais informações.",
 		}}
 	}
@@ -42,10 +30,6 @@ func NewCatalog(language Language) Catalog {
 	return Catalog{messages: map[Message]string{
 		MessageUnknownCommand:        "unknown command",
 		MessageMissingOperand:        "missing operand",
-		MessageIllegalOption:         "illegal option",
-		MessageUnrecognizedOption:    "unrecognized option",
-		MessageInvalidInteractive:    "invalid value for --interactive",
-		MessageNativeUsage:           "Usage: bearm <command> [options]",
 		MessageMissingOperandTryHelp: "Try '%s --help' for more information.",
 	}}
 }

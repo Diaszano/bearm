@@ -30,10 +30,7 @@ func TestAllMessagesTranslated(t *testing.T) {
 	messages := []i18n.Message{
 		i18n.MessageUnknownCommand,
 		i18n.MessageMissingOperand,
-		i18n.MessageIllegalOption,
-		i18n.MessageUnrecognizedOption,
-		i18n.MessageInvalidInteractive,
-		i18n.MessageNativeUsage,
+		i18n.MessageMissingOperandTryHelp,
 	}
 
 	for _, lang := range []i18n.Language{i18n.LanguagePTBR, i18n.LanguageEN} {
