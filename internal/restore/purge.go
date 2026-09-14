@@ -13,13 +13,13 @@ import (
 
 // Purger permanently removes explicitly selected trash items.
 type Purger struct {
-	journal    EventAppender
+	journal    domain.EventAppender
 	clock      func() time.Time
 	trashRoots []string
 }
 
 // NewPurger creates a permanent purge service.
-func NewPurger(journal EventAppender, clock func() time.Time, trashRoots []string) *Purger {
+func NewPurger(journal domain.EventAppender, clock func() time.Time, trashRoots []string) *Purger {
 	return &Purger{journal: journal, clock: clock, trashRoots: trashRoots}
 }
 

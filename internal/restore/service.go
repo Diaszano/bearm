@@ -14,11 +14,6 @@ import (
 	"github.com/Diaszano/bearm/internal/trash"
 )
 
-// EventAppender appends lifecycle events.
-type EventAppender interface {
-	AppendEvents(context.Context, []domain.JournalEvent) error
-}
-
 // CollisionPolicy controls restore destination collisions.
 type CollisionPolicy string
 
@@ -33,12 +28,12 @@ const (
 
 // Service restores active trash records.
 type Service struct {
-	journal EventAppender
+	journal domain.EventAppender
 	clock   func() time.Time
 }
 
 // NewService creates a restore service.
-func NewService(journal EventAppender, clock func() time.Time) *Service {
+func NewService(journal domain.EventAppender, clock func() time.Time) *Service {
 	return &Service{journal: journal, clock: clock}
 }
 
