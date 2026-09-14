@@ -13,6 +13,8 @@ import (
 	"github.com/Diaszano/bearm/internal/config"
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/journal"
+	"github.com/Diaszano/bearm/internal/platform"
+	"runtime"
 )
 
 func setupTestJournal(t *testing.T) (*journal.Repository, string, string, string) {
@@ -364,10 +366,14 @@ func TestNewConfiguredBackend(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
+	dirs, err := platform.ResolveDirs(func(string) string { return "" }, dir, runtime.GOOS)
+	if err != nil {
+		t.Fatalf("ResolveDirs() error = %v", err)
+	}
 	cfg := config.Default()
 	cfg.Trash.CustomPath = filepath.Join(dir, "custom-trash")
 
-	backend, err := NewConfiguredBackend(dir, cfg)
+	backend, err := NewConfiguredBackend(dir, dirs, cfg)
 	if err != nil {
 		t.Fatalf("NewConfiguredBackend() error = %v", err)
 	}
@@ -376,7 +382,7 @@ func TestNewConfiguredBackend(t *testing.T) {
 	}
 
 	cfgDefault := config.Default()
-	platBackend, err := NewConfiguredBackend(dir, cfgDefault)
+	platBackend, err := NewConfiguredBackend(dir, dirs, cfgDefault)
 	if err != nil {
 		t.Fatalf("NewConfiguredBackend() default error = %v", err)
 	}

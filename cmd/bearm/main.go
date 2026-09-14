@@ -63,7 +63,7 @@ func run() int {
 		return 3
 	}
 
-	backend, err := app.NewConfiguredBackend(home, settings)
+	backend, err := app.NewConfiguredBackend(home, dirs, settings)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 3
