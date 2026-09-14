@@ -29,7 +29,7 @@
 - Consumes: Nothing.
 - Produces: `ExpandTarget` in `internal/planner/protected_walk.go` continues to be the single source of truth for directory traversal in `Planner.Plan()`.
 
-- [ ] **Step 1: Check existing references to WalkDepthFirst**
+- [x] **Step 1: Check existing references to WalkDepthFirst**
 
 Verify that no non-test source files call `WalkDepthFirst`:
 ```bash
@@ -37,13 +37,13 @@ grep -rn "WalkDepthFirst" internal/ --exclude="*_test.go"
 ```
 Expected output: empty (no callers in production code).
 
-- [ ] **Step 2: Delete `walk.go` and `walk_test.go`**
+- [x] **Step 2: Delete `walk.go` and `walk_test.go`**
 
 ```bash
 rm internal/planner/walk.go internal/planner/walk_test.go
 ```
 
-- [ ] **Step 3: Run planner tests to verify full pass**
+- [x] **Step 3: Run planner tests to verify full pass**
 
 Run:
 ```bash
@@ -51,7 +51,7 @@ go test -v ./internal/planner/...
 ```
 Expected: PASS with 0 failures.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add internal/planner/walk.go internal/planner/walk_test.go
@@ -70,7 +70,7 @@ git commit -m "refactor(planner): remove unused WalkDepthFirst walker"
 - Consumes: `app.NewWithDependencies`
 - Produces: Cleaner `app` package where `NewWithDependencies` is the single explicit entry point used by `cmd/bearm/main.go` and tests.
 
-- [ ] **Step 1: Update `internal/app/app_test.go` to use `NewWithDependencies` or test helper**
+- [x] **Step 1: Update `internal/app/app_test.go` to use `NewWithDependencies` or test helper**
 
 In `internal/app/app_test.go`, replace tests that invoke `app.New()` with direct calls to `NewWithDependencies` using default test dependencies:
 
@@ -101,11 +101,11 @@ func newDefaultApp(t *testing.T, stdin io.Reader, stdout, stderr io.Writer, info
 ```
 Replace `New(...)` calls at lines 25, 48, 64, 93 in `app_test.go` with `newDefaultApp(t, ...)`.
 
-- [ ] **Step 2: Delete `New()` from `internal/app/app.go`**
+- [x] **Step 2: Delete `New()` from `internal/app/app.go`**
 
 Remove lines 40-81 in `internal/app/app.go` (the `func New(...)` function).
 
-- [ ] **Step 3: Run app tests to verify pass**
+- [x] **Step 3: Run app tests to verify pass**
 
 Run:
 ```bash
@@ -113,7 +113,7 @@ go test -v ./internal/app/...
 ```
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add internal/app/app.go internal/app/app_test.go
@@ -133,7 +133,7 @@ git commit -m "refactor(app): remove obsolete New constructor in favor of NewWit
 - Consumes: Standard library `encoding/json`
 - Produces: Inlined JSON marshaling for Darwin metadata matching `custom/backend.go`.
 
-- [ ] **Step 1: Update `internal/trash/darwin/backend.go` to inline `json.Marshal`**
+- [x] **Step 1: Update `internal/trash/darwin/backend.go` to inline `json.Marshal`**
 
 In `internal/trash/darwin/backend.go`, replace lines 68-76:
 ```go
@@ -153,13 +153,13 @@ In `internal/trash/darwin/backend.go`, replace lines 68-76:
 	metadata = append(metadata, '\n')
 ```
 
-- [ ] **Step 2: Remove `metadata.go` and `metadata_test.go`**
+- [x] **Step 2: Remove `metadata.go` and `metadata_test.go`**
 
 ```bash
 rm internal/trash/darwin/metadata.go internal/trash/darwin/metadata_test.go
 ```
 
-- [ ] **Step 3: Verify Darwin package compiles**
+- [x] **Step 3: Verify Darwin package compiles**
 
 Run:
 ```bash
@@ -167,7 +167,7 @@ GOOS=darwin go build ./internal/trash/darwin/...
 ```
 Expected: Build succeeds with 0 errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add internal/trash/darwin/backend.go internal/trash/darwin/metadata.go internal/trash/darwin/metadata_test.go
@@ -187,7 +187,7 @@ git commit -m "refactor(trash/darwin): replace RenderMetadata wrapper with stand
 - Consumes: `domain.RemovalPlan`
 - Produces: `Prompter` with direct prompt rendering without `defaultPromptFormatter` indirection.
 
-- [ ] **Step 1: Simplify `internal/removal/prompt.go`**
+- [x] **Step 1: Simplify `internal/removal/prompt.go`**
 
 Replace `PromptFormatter` interface and `defaultPromptFormatter` with direct methods on `Prompter` or a simpler formatter function:
 ```go
@@ -211,11 +211,11 @@ func NewPrompter(reader io.Reader, writer io.Writer, formatter PromptFormatter) 
 ```
 Eliminate `defaultPromptFormatter` and `p.getFormatter()`. If `formatter` is nil, handle safely in `ConfirmOnce` and `ConfirmTarget` with fallback strings.
 
-- [ ] **Step 2: Update callers of `NewPrompter`**
+- [x] **Step 2: Update callers of `NewPrompter`**
 
 In `internal/app/app.go:321` and tests where `NewPrompter(r, w)` was called without a third argument, pass `nil` or a basic formatter.
 
-- [ ] **Step 3: Run removal and app tests**
+- [x] **Step 3: Run removal and app tests**
 
 Run:
 ```bash
@@ -223,7 +223,7 @@ go test -v ./internal/removal/... ./internal/app/...
 ```
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add internal/removal/prompt.go internal/removal/prompt_test.go internal/app/app.go
@@ -244,7 +244,7 @@ git commit -m "refactor(removal): simplify Prompter and remove defaultPromptForm
 - Consumes: Nothing
 - Produces: Lean `config.Config` without unused `Logging` struct or validation.
 
-- [ ] **Step 1: Remove `LoggingConfig` from `internal/config/config.go`**
+- [x] **Step 1: Remove `LoggingConfig` from `internal/config/config.go`**
 
 Delete:
 - `Logging LoggingConfig` from `Config` struct (line 17).
@@ -252,7 +252,7 @@ Delete:
 - `Logging: LoggingConfig{Level: "error"}` from `Default()` (line 59).
 - `switch c.Logging.Level { ... }` from `Validate()` (lines 86-90).
 
-- [ ] **Step 2: Remove `BEARM_LOG_LEVEL` from `internal/config/environment.go`**
+- [x] **Step 2: Remove `BEARM_LOG_LEVEL` from `internal/config/environment.go`**
 
 Delete lines 23-25:
 ```go
@@ -261,11 +261,11 @@ Delete lines 23-25:
 	}
 ```
 
-- [ ] **Step 3: Update `config_test.go` and `environment_test.go`**
+- [x] **Step 3: Update `config_test.go` and `environment_test.go`**
 
 Remove assertions checking `got.Logging.Level`.
 
-- [ ] **Step 4: Run config tests**
+- [x] **Step 4: Run config tests**
 
 Run:
 ```bash
@@ -273,7 +273,7 @@ go test -v ./internal/config/...
 ```
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/config/config.go internal/config/environment.go internal/config/config_test.go internal/config/environment_test.go
@@ -297,7 +297,7 @@ git commit -m "refactor(config): delete unused LoggingConfig and BEARM_LOG_LEVEL
 - Consumes: `crypto/rand`, `encoding/hex`
 - Produces: `pathutil.NewID() (string, error)`
 
-- [ ] **Step 1: Move `New` to `internal/pathutil/id.go`**
+- [x] **Step 1: Move `New` to `internal/pathutil/id.go`**
 
 Create `internal/pathutil/id.go`:
 ```go
@@ -318,17 +318,17 @@ func NewID() (string, error) {
 }
 ```
 
-- [ ] **Step 2: Delete `internal/id/` package**
+- [x] **Step 2: Delete `internal/id/` package**
 
 ```bash
 rm -rf internal/id
 ```
 
-- [ ] **Step 3: Update imports in callers**
+- [x] **Step 3: Update imports in callers**
 
 In `internal/app/app.go`, `internal/app/backend_linux.go`, `internal/app/backend_darwin.go`, `internal/app/dependencies.go`, replace import of `github.com/Diaszano/bearm/internal/id` with `pathutil.NewID`.
 
-- [ ] **Step 4: Run test suite**
+- [x] **Step 4: Run test suite**
 
 Run:
 ```bash
@@ -336,7 +336,7 @@ go test ./...
 ```
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/pathutil/id.go internal/id internal/app
@@ -355,7 +355,7 @@ git commit -m "refactor: consolidate ID generation into pathutil and remove inte
 - Consumes: Nothing
 - Produces: Cleaned message catalog containing only active messages (`MessageUnknownCommand`, `MessageMissingOperand`, `MessageMissingOperandTryHelp`).
 
-- [ ] **Step 1: Remove dead message constants and catalog entries**
+- [x] **Step 1: Remove dead message constants and catalog entries**
 
 In `internal/i18n/catalog.go`, remove:
 - `MessageIllegalOption`
@@ -364,11 +364,11 @@ In `internal/i18n/catalog.go`, remove:
 - `MessageNativeUsage`
 and their entries in `NewCatalog()`.
 
-- [ ] **Step 2: Update `internal/i18n/catalog_test.go`**
+- [x] **Step 2: Update `internal/i18n/catalog_test.go`**
 
 Remove the 4 deleted constants from the test verification table.
 
-- [ ] **Step 3: Run i18n tests**
+- [x] **Step 3: Run i18n tests**
 
 Run:
 ```bash
@@ -376,7 +376,7 @@ go test -v ./internal/i18n/...
 ```
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add internal/i18n/catalog.go internal/i18n/catalog_test.go
@@ -394,7 +394,7 @@ git commit -m "refactor(i18n): remove unused message constants and catalog entri
 - Consumes: `domain.CompatibilityProfile`
 - Produces: Deduplicated option routing in `applyLongOption()`.
 
-- [ ] **Step 1: Simplify GNU profile checks in `applyLongOption`**
+- [x] **Step 1: Simplify GNU profile checks in `applyLongOption`**
 
 In `internal/cli/compatibility.go`, replace repetitive `if s.profile != domain.ProfileGNU` blocks:
 ```go
@@ -418,7 +418,7 @@ In `internal/cli/compatibility.go`, replace repetitive `if s.profile != domain.P
 		}
 ```
 
-- [ ] **Step 2: Run CLI tests**
+- [x] **Step 2: Run CLI tests**
 
 Run:
 ```bash
@@ -426,7 +426,7 @@ go test -v ./internal/cli/...
 ```
 Expected: PASS.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add internal/cli/compatibility.go
@@ -445,7 +445,7 @@ git commit -m "refactor(cli): consolidate duplicate GNU option guards in applyLo
 - Consumes: `platform.ResolveDirs`
 - Produces: Unified directory resolution without manual `XDG_DATA_HOME` checks.
 
-- [ ] **Step 1: Update `backend_linux.go` to use `dirs.DataRoot` or `platform.ResolveDirs`**
+- [x] **Step 1: Update `backend_linux.go` to use `dirs.DataRoot` or `platform.ResolveDirs`**
 
 Refactor `newPlatformBackend` to accept `dirs platform.Dirs` instead of resolving `XDG_DATA_HOME` directly:
 ```go
@@ -462,7 +462,7 @@ func newPlatformBackend(home string, dirs platform.Dirs, settings config.Config)
 }
 ```
 
-- [ ] **Step 2: Run app tests**
+- [x] **Step 2: Run app tests**
 
 Run:
 ```bash
@@ -470,7 +470,7 @@ go test -v ./internal/app/...
 ```
 Expected: PASS.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add internal/app/backend_linux.go internal/app/app.go
@@ -490,11 +490,11 @@ git commit -m "refactor(app): reuse platform.Dirs in Linux backend setup"
 - Consumes: `domain.JournalEvent`
 - Produces: Single unified `JournalAppender` interface for appending journal records and events.
 
-- [ ] **Step 1: Define canonical journal appender in `internal/domain/journal.go` or reuse `*journal.Repository`**
+- [x] **Step 1: Define canonical journal appender in `internal/domain/journal.go` or reuse `*journal.Repository`**
 
 In `internal/restore/service.go` and `internal/restore/purge.go`, replace separate `EventAppender` declarations with `*journal.Repository` or a common domain interface.
 
-- [ ] **Step 2: Run restore tests**
+- [x] **Step 2: Run restore tests**
 
 Run:
 ```bash
@@ -502,7 +502,7 @@ go test -v ./internal/restore/...
 ```
 Expected: PASS.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add internal/restore/service.go internal/restore/purge.go internal/domain/journal.go
@@ -521,7 +521,7 @@ git commit -m "refactor(restore): unify redundant EventAppender interface"
 - Consumes: Standard library `errors.Is`
 - Produces: Direct standard library usage.
 
-- [ ] **Step 1: Remove `IsMissing` from `file.go` and its test from `file_test.go`**
+- [x] **Step 1: Remove `IsMissing` from `file.go` and its test from `file_test.go`**
 
 Delete lines 43-46 in `internal/config/file.go`:
 ```go
@@ -532,7 +532,7 @@ func IsMissing(err error) bool {
 ```
 Delete `TestIsMissing` in `internal/config/file_test.go`.
 
-- [ ] **Step 2: Run config tests**
+- [x] **Step 2: Run config tests**
 
 Run:
 ```bash
@@ -540,7 +540,7 @@ go test -v ./internal/config/...
 ```
 Expected: PASS.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add internal/config/file.go internal/config/file_test.go
@@ -559,7 +559,7 @@ git commit -m "refactor(config): remove unused IsMissing helper"
 - Consumes: Nothing
 - Produces: Clean `domain.Destination` struct without dead fields.
 
-- [ ] **Step 1: Remove fields from `internal/domain/trash.go`**
+- [x] **Step 1: Remove fields from `internal/domain/trash.go`**
 
 In `internal/domain/trash.go`, remove:
 ```go
@@ -567,7 +567,7 @@ In `internal/domain/trash.go`, remove:
 	InfoPath         string
 ```
 
-- [ ] **Step 2: Run domain tests**
+- [x] **Step 2: Run domain tests**
 
 Run:
 ```bash
@@ -575,7 +575,7 @@ go test -v ./internal/domain/...
 ```
 Expected: PASS.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add internal/domain/trash.go
@@ -596,13 +596,13 @@ git commit -m "refactor(domain): remove unused TargetPath and InfoPath fields fr
 - Consumes: `*journal.Repository`
 - Produces: `Dependencies` struct where `Repository` serves as the single journal reference.
 
-- [ ] **Step 1: Remove `Journal` field from `Dependencies`**
+- [x] **Step 1: Remove `Journal` field from `Dependencies`**
 
 In `internal/app/dependencies.go`, remove line 18 (`Journal removal.Journal`).
 In `cmd/bearm/main.go:74-81`, remove `Journal: journalRepo`.
 In `internal/app/app.go:158, 167`, use `a.dependencies.Repository` when checking nil and passing to `removal.NewExecutor`.
 
-- [ ] **Step 2: Run all tests and acceptance scripts**
+- [x] **Step 2: Run all tests and acceptance scripts**
 
 Run:
 ```bash
@@ -610,7 +610,7 @@ go test ./...
 ```
 Expected: PASS across all packages.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add internal/app cmd/bearm/main.go
