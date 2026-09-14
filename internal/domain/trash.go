@@ -10,8 +10,6 @@ type Destination struct {
 	Root             string
 	FilesDir         string
 	InfoDir          string
-	TargetPath       string
-	InfoPath         string
 	MountPoint       string // populated by Resolve for backends that need it
 	RelativeInfoPath bool   // true when .trashinfo paths should be relative to mount
 }
