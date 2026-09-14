@@ -5,8 +5,8 @@ import (
 
 	"github.com/Diaszano/bearm/internal/config"
 	"github.com/Diaszano/bearm/internal/domain"
-	"github.com/Diaszano/bearm/internal/id"
 	"github.com/Diaszano/bearm/internal/journal"
+	"github.com/Diaszano/bearm/internal/pathutil"
 	"github.com/Diaszano/bearm/internal/removal"
 	"github.com/Diaszano/bearm/internal/safety"
 	customtrash "github.com/Diaszano/bearm/internal/trash/custom"
@@ -28,7 +28,7 @@ func NewConfiguredBackend(home string, settings config.Config) (domain.TrashBack
 		return customtrash.NewBackend(
 			settings.Trash.CustomPath,
 			time.Now,
-			id.New,
+			pathutil.NewID,
 		)
 	}
 	return newPlatformBackend(home, settings), nil

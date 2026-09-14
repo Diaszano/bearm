@@ -1,13 +1,12 @@
-// Package id creates opaque Bearm operation and item identifiers.
-package id
+package pathutil
 
 import (
 	"crypto/rand"
 	"encoding/hex"
 )
 
-// New returns a 128-bit lowercase hexadecimal identifier.
-func New() (string, error) {
+// NewID returns a 128-bit lowercase hexadecimal identifier.
+func NewID() (string, error) {
 	var value [16]byte
 	if _, err := rand.Read(value[:]); err != nil {
 		return "", err

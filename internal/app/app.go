@@ -16,7 +16,7 @@ import (
 	"github.com/Diaszano/bearm/internal/cli"
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/i18n"
-	"github.com/Diaszano/bearm/internal/id"
+	"github.com/Diaszano/bearm/internal/pathutil"
 	"github.com/Diaszano/bearm/internal/planner"
 	"github.com/Diaszano/bearm/internal/removal"
 	"github.com/Diaszano/bearm/internal/restore"
@@ -112,7 +112,7 @@ func (a *App) runCompatibility(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	instance := planner.New(a.dependencies.Policy, id.New)
+	instance := planner.New(a.dependencies.Policy, pathutil.NewID)
 	plan, planningFailures := instance.Plan(ctx, request)
 	executor := removal.NewExecutor(
 		a.dependencies.Backend,

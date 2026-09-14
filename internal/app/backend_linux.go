@@ -9,7 +9,7 @@ import (
 
 	"github.com/Diaszano/bearm/internal/config"
 	"github.com/Diaszano/bearm/internal/domain"
-	"github.com/Diaszano/bearm/internal/id"
+	"github.com/Diaszano/bearm/internal/pathutil"
 	linuxtrash "github.com/Diaszano/bearm/internal/trash/linux"
 )
 
@@ -25,6 +25,6 @@ func newPlatformBackend(home string, settings config.Config) domain.TrashBackend
 			PerMount:  settings.Trash.PerMount,
 		},
 		time.Now,
-		id.New,
+		pathutil.NewID,
 	)
 }
