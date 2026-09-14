@@ -73,7 +73,6 @@ func run() int {
 
 	dependencies := app.Dependencies{
 		Backend:    backend,
-		Journal:    journalRepo,
 		Repository: journalRepo,
 		Policy:     policy,
 		Config:     settings,

@@ -7,10 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Diaszano/bearm/internal/app"
 	"github.com/Diaszano/bearm/internal/buildinfo"
 	"github.com/Diaszano/bearm/internal/config"
+	"github.com/Diaszano/bearm/internal/journal"
 	"github.com/Diaszano/bearm/internal/safety"
 	"github.com/Diaszano/bearm/internal/testutil"
 )
@@ -39,10 +41,10 @@ func TestCompatibilityCannotRemoveHardProtectedRoot(t *testing.T) {
 		&stderr,
 		buildinfo.Current(),
 		app.Dependencies{
-			Backend: &testutil.Backend{},
-			Journal: &testutil.Journal{},
-			Policy:  policy,
-			Config:  config.Default(),
+			Backend:    &testutil.Backend{},
+			Repository: journal.New(filepath.Join(root, "journal.jsonl"), time.Now),
+			Policy:     policy,
+			Config:     config.Default(),
 		},
 	)
 
@@ -67,10 +69,10 @@ func TestCompatibilityCannotRemoveSystemRootWithNoPreserveRoot(t *testing.T) {
 		&stderr,
 		buildinfo.Current(),
 		app.Dependencies{
-			Backend: &testutil.Backend{},
-			Journal: &testutil.Journal{},
-			Policy:  policy,
-			Config:  config.Default(),
+			Backend:    &testutil.Backend{},
+			Repository: journal.New(filepath.Join(t.TempDir(), "journal.jsonl"), time.Now),
+			Policy:     policy,
+			Config:     config.Default(),
 		},
 	)
 

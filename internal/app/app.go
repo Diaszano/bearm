@@ -107,7 +107,7 @@ func (a *App) runCompatibility(ctx context.Context, args []string) int {
 	if len(request.Operands) == 0 {
 		return 0
 	}
-	if a.dependencies.Backend == nil || a.dependencies.Journal == nil || a.dependencies.Policy == nil {
+	if a.dependencies.Backend == nil || a.dependencies.Repository == nil || a.dependencies.Policy == nil {
 		ignoreWrite(fmt.Fprintln(a.err, "rm: removal infrastructure is not configured"))
 		return 1
 	}
@@ -116,7 +116,7 @@ func (a *App) runCompatibility(ctx context.Context, args []string) int {
 	plan, planningFailures := instance.Plan(ctx, request)
 	executor := removal.NewExecutor(
 		a.dependencies.Backend,
-		a.dependencies.Journal,
+		a.dependencies.Repository,
 		a.dependencies.Policy,
 		removal.NewPrompter(a.stdin, a.err, renderer),
 		a.out,

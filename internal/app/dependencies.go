@@ -8,7 +8,6 @@ import (
 	"github.com/Diaszano/bearm/internal/journal"
 	"github.com/Diaszano/bearm/internal/pathutil"
 	"github.com/Diaszano/bearm/internal/platform"
-	"github.com/Diaszano/bearm/internal/removal"
 	"github.com/Diaszano/bearm/internal/safety"
 	customtrash "github.com/Diaszano/bearm/internal/trash/custom"
 )
@@ -16,7 +15,6 @@ import (
 // Dependencies contains mutable infrastructure used by the application.
 type Dependencies struct {
 	Backend    domain.TrashBackend
-	Journal    removal.Journal
 	Repository *journal.Repository
 	Policy     *safety.Policy
 	Config     config.Config

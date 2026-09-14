@@ -37,7 +37,6 @@ func newDefaultApp(t *testing.T, stdin io.Reader, stdout, stderr io.Writer, info
 	}
 	return NewWithDependencies(stdin, stdout, stderr, info, Dependencies{
 		Backend:    backend,
-		Journal:    repo,
 		Repository: repo,
 		Policy:     policy,
 		Config:     config.Default(),
@@ -140,7 +139,7 @@ func TestRunCompatibilityMovesPlannedTarget(t *testing.T) {
 		t.Fatal(err)
 	}
 	backend := &testutil.Backend{}
-	journal := &testutil.Journal{}
+	repo := journal.New(filepath.Join(root, "journal.jsonl"), time.Now)
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
@@ -149,7 +148,7 @@ func TestRunCompatibilityMovesPlannedTarget(t *testing.T) {
 		&stdout,
 		&stderr,
 		buildinfo.Current(),
-		Dependencies{Backend: backend, Journal: journal, Policy: policy},
+		Dependencies{Backend: backend, Repository: repo, Policy: policy},
 	)
 
 	code := instance.Run(context.Background(), []string{"rm", source})
@@ -182,7 +181,11 @@ func TestRunBSDInteractiveOnceCountsDuplicateOperands(t *testing.T) {
 		&stdout,
 		&stderr,
 		buildinfo.Current(),
-		Dependencies{Backend: backend, Journal: &testutil.Journal{}, Policy: policy},
+		Dependencies{
+			Backend:    backend,
+			Repository: journal.New(filepath.Join(root, "journal.jsonl"), time.Now),
+			Policy:     policy,
+		},
 	)
 	instance.getenv = func(key string) string {
 		if key == "BEARM_COMPAT" {
@@ -270,7 +273,11 @@ func TestRunBSDInteractiveOnceFormatsRecursivePrompts(t *testing.T) {
 			var stderr bytes.Buffer
 			instance := NewWithDependencies(
 				strings.NewReader("n\n"), &stdout, &stderr, buildinfo.Current(),
-				Dependencies{Backend: backend, Journal: &testutil.Journal{}, Policy: policy},
+				Dependencies{
+					Backend:    backend,
+					Repository: journal.New(filepath.Join(root, "journal.jsonl"), time.Now),
+					Policy:     policy,
+				},
 			)
 			instance.getenv = func(key string) string {
 				if key == "BEARM_COMPAT" {
