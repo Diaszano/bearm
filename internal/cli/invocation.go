@@ -18,9 +18,8 @@ const (
 
 // Invocation contains the mode and arguments after executable/subcommand removal.
 type Invocation struct {
-	Program string
-	Mode    InvocationMode
-	Args    []string
+	Mode InvocationMode
+	Args []string
 }
 
 // ResolveInvocation determines whether argv requests compatibility or native mode.
@@ -32,23 +31,20 @@ func ResolveInvocation(argv []string) (Invocation, error) {
 	program := filepath.Base(argv[0])
 	if program == "rm" {
 		return Invocation{
-			Program: program,
-			Mode:    ModeCompatibility,
-			Args:    append([]string(nil), argv[1:]...),
+			Mode: ModeCompatibility,
+			Args: append([]string(nil), argv[1:]...),
 		}, nil
 	}
 
 	if len(argv) > 1 && argv[1] == "rm" {
 		return Invocation{
-			Program: "rm",
-			Mode:    ModeCompatibility,
-			Args:    append([]string(nil), argv[2:]...),
+			Mode: ModeCompatibility,
+			Args: append([]string(nil), argv[2:]...),
 		}, nil
 	}
 
 	return Invocation{
-		Program: program,
-		Mode:    ModeNative,
-		Args:    append([]string(nil), argv[1:]...),
+		Mode: ModeNative,
+		Args: append([]string(nil), argv[1:]...),
 	}, nil
 }

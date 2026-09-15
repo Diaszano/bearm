@@ -12,10 +12,9 @@ import (
 
 // CompatibilityRenderer renders profile-specific rm diagnostics.
 type CompatibilityRenderer struct {
-	profile  domain.CompatibilityProfile
-	language i18n.Language
-	program  string
-	catalog  i18n.Catalog
+	profile domain.CompatibilityProfile
+	program string
+	catalog i18n.Catalog
 }
 
 // NewCompatibilityRenderer creates a deterministic compatibility renderer.
@@ -25,10 +24,9 @@ func NewCompatibilityRenderer(
 	program string,
 ) CompatibilityRenderer {
 	return CompatibilityRenderer{
-		profile:  profile,
-		language: language,
-		program:  program,
-		catalog:  i18n.NewCatalog(language),
+		profile: profile,
+		program: program,
+		catalog: i18n.NewCatalog(language),
 	}
 }
 
