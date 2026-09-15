@@ -72,6 +72,21 @@ func TestParseNativeVersion(t *testing.T) {
 	}
 }
 
+func TestParseNativeHelp(t *testing.T) {
+	t.Parallel()
+
+	for _, args := range [][]string{nil, {"help"}, {"-h"}, {"--help"}} {
+		got, err := cli.ParseNative(args)
+		if err != nil {
+			t.Errorf("ParseNative(%q) error = %v", args, err)
+			continue
+		}
+		if got.Command != cli.NativeCommand("help") {
+			t.Errorf("ParseNative(%q) command = %q, want help", args, got.Command)
+		}
+	}
+}
+
 func TestParseNativeDoctor(t *testing.T) {
 	t.Parallel()
 
@@ -127,15 +142,10 @@ func TestParseNativeConfig(t *testing.T) {
 	}
 }
 
-func TestParseNativeEmptyAndUnknown(t *testing.T) {
+func TestParseNativeUnknown(t *testing.T) {
 	t.Parallel()
 
-	_, err := cli.ParseNative([]string{})
-	if err == nil {
-		t.Fatal("expected error for empty args")
-	}
-
-	_, err = cli.ParseNative([]string{"unknown"})
+	_, err := cli.ParseNative([]string{"unknown"})
 	if err == nil {
 		t.Fatal("expected error for unknown command")
 	}

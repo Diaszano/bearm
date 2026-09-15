@@ -9,6 +9,8 @@ import (
 type NativeCommand string
 
 const (
+	// CommandHelp prints Bearm-native command help.
+	CommandHelp NativeCommand = "help"
 	// CommandVersion prints Bearm build information.
 	CommandVersion NativeCommand = "version"
 	// CommandList lists active trash items.
@@ -36,8 +38,6 @@ type NativeRequest struct {
 }
 
 var (
-	// ErrMissingCommand reports a missing native command.
-	ErrMissingCommand = errors.New("missing native command")
 	// ErrUnknownCommand reports an unknown native command.
 	ErrUnknownCommand = errors.New("unknown native command")
 )
@@ -45,11 +45,17 @@ var (
 // ParseNative parses Bearm-native command arguments.
 func ParseNative(args []string) (NativeRequest, error) {
 	if len(args) == 0 {
-		return NativeRequest{}, ErrMissingCommand
+		return NativeRequest{Command: CommandHelp}, nil
 	}
 
 	request := NativeRequest{Command: NativeCommand(args[0]), Limit: 50}
 	switch request.Command {
+	case CommandHelp, "-h", "--help":
+		if len(args) != 1 {
+			return NativeRequest{}, errors.New("help accepts no arguments")
+		}
+		request.Command = CommandHelp
+		return request, nil
 	case CommandVersion:
 		if len(args) != 1 {
 			return NativeRequest{}, errors.New("version accepts no arguments")

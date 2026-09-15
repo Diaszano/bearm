@@ -64,6 +64,34 @@ func TestRunVersion(t *testing.T) {
 	}
 }
 
+func TestRunHelpListsNativeCommands(t *testing.T) {
+	t.Parallel()
+
+	for _, argv := range [][]string{
+		{"bearm"},
+		{"bearm", "help"},
+		{"bearm", "-h"},
+		{"bearm", "--help"},
+	} {
+		var stdout bytes.Buffer
+		var stderr bytes.Buffer
+		instance := newDefaultApp(t, strings.NewReader(""), &stdout, &stderr, buildinfo.Current())
+
+		if code := instance.Run(context.Background(), argv); code != 0 {
+			t.Errorf("Run(%q) code = %d, stderr = %q", argv, code, stderr.String())
+			continue
+		}
+		for _, command := range []string{"rm", "list", "restore", "purge", "doctor", "config", "version", "help"} {
+			if !strings.Contains(stdout.String(), "\n  "+command) {
+				t.Errorf("Run(%q) output does not list %q: %q", argv, command, stdout.String())
+			}
+		}
+		if stderr.Len() != 0 {
+			t.Errorf("Run(%q) stderr = %q, want empty", argv, stderr.String())
+		}
+	}
+}
+
 func TestRunRMForceWithoutOperandsReturnsSuccess(t *testing.T) {
 	t.Parallel()
 
