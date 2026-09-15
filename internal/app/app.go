@@ -284,7 +284,7 @@ func (a *App) runPurge(ctx context.Context, request cli.NativeRequest) int {
 }
 
 func (a *App) runDoctor(ctx context.Context, request cli.NativeRequest) int {
-	findings, err := restore.NewDoctor(a.dependencies.Repository).Check(ctx)
+	findings, err := restore.Check(ctx, a.dependencies.Repository)
 	if err != nil {
 		ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
 		return 1
