@@ -3,7 +3,6 @@ package planner
 import (
 	"os"
 	"path/filepath"
-	"sort"
 
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/pathutil"
@@ -46,9 +45,6 @@ func ExpandTarget(
 			if err != nil {
 				return err
 			}
-			sort.Slice(children, func(i, j int) bool {
-				return children[i].Name() < children[j].Name()
-			})
 			for _, child := range children {
 				if err := visit(filepath.Join(path, child.Name())); err != nil {
 					return err
