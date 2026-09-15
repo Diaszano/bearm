@@ -4,7 +4,6 @@ package darwin
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"path/filepath"
 	"time"
@@ -67,19 +66,10 @@ func (b *Backend) Move(
 	}
 
 	deletedAt := b.clock()
-	metadata, err := json.Marshal(struct {
-		SchemaVersion int       `json:"schema_version"`
-		OriginalPath  string    `json:"original_path"`
-		DeletedAt     time.Time `json:"deleted_at"`
-	}{
-		SchemaVersion: 1,
-		OriginalPath:  target.AbsolutePath,
-		DeletedAt:     deletedAt.UTC(),
-	})
+	metadata, err := trash.RenderMetadata(target.AbsolutePath, deletedAt)
 	if err != nil {
 		return domain.TrashRecord{}, err
 	}
-	metadata = append(metadata, '\n')
 
 	reservation, err := trash.ReserveName(
 		destination.FilesDir,
