@@ -114,7 +114,7 @@ func TestRestoreRenameCreatesUniqueDestination(t *testing.T) {
 	}
 }
 
-func TestRestoreCollisionOverwrite(t *testing.T) {
+func TestRestoreCollisionOverwriteRejected(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
@@ -138,11 +138,13 @@ func TestRestoreCollisionOverwrite(t *testing.T) {
 		TrashedPath:   trashed,
 	}}, restore.CollisionOverwrite)
 
-	if len(results) != 1 || results[0].Status != domain.ItemRestored {
+	if len(results) != 1 || results[0].Status != domain.ItemFailed {
 		t.Fatalf("results = %#v", results)
 	}
-	if got, err := os.ReadFile(original); err != nil || string(got) != trashed {
-		t.Fatalf("expected original to be replaced by trashed data, got %q", string(got))
+	for _, path := range []string{original, trashed} {
+		if got, err := os.ReadFile(path); err != nil || string(got) != path {
+			t.Fatalf("file changed: %s: %q, %v", path, got, err)
+		}
 	}
 }
 

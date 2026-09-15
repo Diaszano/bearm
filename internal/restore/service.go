@@ -22,7 +22,7 @@ const (
 	CollisionFail CollisionPolicy = "fail"
 	// CollisionRename restores to a unique sibling path.
 	CollisionRename CollisionPolicy = "rename"
-	// CollisionOverwrite permanently removes the destination before restore.
+	// CollisionOverwrite is reserved and rejected by the CLI.
 	CollisionOverwrite CollisionPolicy = "overwrite"
 )
 
@@ -111,13 +111,7 @@ func atomicRestore(src, dst string, policy CollisionPolicy) (string, error) {
 		}
 		return "", errors.New("restore destination limit exceeded")
 	case CollisionOverwrite:
-		if err := os.RemoveAll(dst); err != nil {
-			return "", err
-		}
-		if err := os.Rename(src, dst); err != nil {
-			return "", err
-		}
-		return dst, nil
+		return "", errors.New("unsupported restore collision policy")
 	default:
 		return "", errors.New("unsupported restore collision policy")
 	}
