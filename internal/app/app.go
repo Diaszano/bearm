@@ -34,6 +34,19 @@ type App struct {
 
 func ignoreWrite(_ int, _ error) {}
 
+const nativeHelp = `Usage: bearm <command> [options]
+
+Commands:
+  rm [options] target...
+  list [--limit N] [--operation ID] [--json]
+  restore ITEM_ID... | --operation ID | --last
+  purge ITEM_ID... | --operation ID | --last [--yes]
+  doctor [--json]
+  config path|check
+  version
+  help
+`
+
 // NewWithDependencies creates an application with explicit infrastructure.
 func NewWithDependencies(
 	stdin io.Reader,
@@ -136,12 +149,16 @@ func (a *App) runNative(ctx context.Context, args []string) int {
 	catalog := i18n.NewCatalog(i18n.ResolveNativeLanguage(a.getenv))
 	request, err := cli.ParseNative(args)
 	if err != nil {
-		if errors.Is(err, cli.ErrUnknownCommand) || errors.Is(err, cli.ErrMissingCommand) {
+		if errors.Is(err, cli.ErrUnknownCommand) {
 			ignoreWrite(fmt.Fprintf(a.err, "bearm: %s\n", catalog.Text(i18n.MessageUnknownCommand)))
 		} else {
 			ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
 		}
 		return 2
+	}
+	if request.Command == cli.CommandHelp {
+		ignoreWrite(fmt.Fprint(a.out, nativeHelp))
+		return 0
 	}
 
 	if request.Command == cli.CommandVersion {
@@ -181,7 +198,7 @@ func (a *App) runNative(ctx context.Context, args []string) int {
 		return a.runPurge(ctx, request)
 	case cli.CommandDoctor:
 		return a.runDoctor(ctx, request)
-	case cli.CommandVersion, cli.CommandConfig:
+	case cli.CommandHelp, cli.CommandVersion, cli.CommandConfig:
 		return 2
 	default:
 		ignoreWrite(fmt.Fprintf(a.err, "bearm: %s\n", catalog.Text(i18n.MessageUnknownCommand)))
