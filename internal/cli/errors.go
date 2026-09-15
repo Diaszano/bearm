@@ -13,8 +13,6 @@ func (e *UsageError) Error() string {
 	switch e.Kind {
 	case "invalid-interactive":
 		return fmt.Sprintf("invalid interactive value %q", e.Value)
-	case "missing-value":
-		return fmt.Sprintf("missing value for %q", e.Option)
 	default:
 		return fmt.Sprintf("unsupported option %q", e.Option)
 	}
