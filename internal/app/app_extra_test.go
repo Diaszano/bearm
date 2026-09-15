@@ -9,12 +9,13 @@ import (
 	"testing"
 	"time"
 
+	"runtime"
+
 	"github.com/Diaszano/bearm/internal/buildinfo"
 	"github.com/Diaszano/bearm/internal/config"
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/journal"
 	"github.com/Diaszano/bearm/internal/platform"
-	"runtime"
 )
 
 func setupTestJournal(t *testing.T) (*journal.Repository, string, string, string) {

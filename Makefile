@@ -3,7 +3,7 @@ SHELL := /bin/sh
 BINARY := bin/bearm
 PACKAGES := ./...
 
-.PHONY: all build test test-race vet fmt-check lint verify clean
+.PHONY: all build test test-race vet fmt fmt-check lint lint-fix verify clean snapshot
 
 all: verify build
 
@@ -20,18 +20,22 @@ test-race:
 vet:
 	go vet $(PACKAGES)
 
+fmt:
+	golangci-lint fmt $(PACKAGES)
+
 fmt-check:
-	@test -z "$$(gofmt -l .)" || { echo "gofmt is required for:"; gofmt -l .; exit 1; }
+	golangci-lint fmt --diff $(PACKAGES)
 
 lint:
-	golangci-lint run ./...
+	golangci-lint run $(PACKAGES)
+
+lint-fix:
+	golangci-lint run --fix $(PACKAGES)
 
 verify: fmt-check vet lint test test-race
 
 clean:
 	rm -rf bin dist coverage.out coverage.html
-
-.PHONY: snapshot
 
 snapshot:
 	goreleaser release --snapshot --clean
