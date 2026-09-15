@@ -30,8 +30,7 @@ func TestDoctorReportsMissingTrashedPath(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	doctor := restore.NewDoctor(repository)
-	findings, err := doctor.Check(context.Background())
+	findings, err := restore.Check(context.Background(), repository)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,8 +47,7 @@ func TestDoctorReportsIncompleteTrailingLine(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	doctor := restore.NewDoctor(journal.New(path, time.Now))
-	findings, err := doctor.Check(context.Background())
+	findings, err := restore.Check(context.Background(), journal.New(path, time.Now))
 	if err != nil {
 		t.Fatal(err)
 	}

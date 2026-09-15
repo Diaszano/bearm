@@ -8,23 +8,18 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
 
 	"github.com/Diaszano/bearm/internal/buildinfo"
 	"github.com/Diaszano/bearm/internal/cli"
-	"github.com/Diaszano/bearm/internal/config"
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/i18n"
-	"github.com/Diaszano/bearm/internal/id"
-	"github.com/Diaszano/bearm/internal/journal"
+	"github.com/Diaszano/bearm/internal/pathutil"
 	"github.com/Diaszano/bearm/internal/planner"
-	"github.com/Diaszano/bearm/internal/platform"
 	"github.com/Diaszano/bearm/internal/removal"
 	"github.com/Diaszano/bearm/internal/restore"
-	"github.com/Diaszano/bearm/internal/safety"
 )
 
 // App is the Bearm application shell.
@@ -35,46 +30,6 @@ type App struct {
 	info         buildinfo.Info
 	getenv       func(string) string
 	dependencies Dependencies
-}
-
-// New creates an application with default removal infrastructure.
-func New(stdin io.Reader, stdout, stderr io.Writer, info buildinfo.Info) *App {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		home = os.TempDir()
-	}
-	defaultConfig := config.Default()
-	backend := newPlatformBackend(home, defaultConfig)
-
-	dirs, _ := platform.ResolveDirs(os.Getenv, home, runtime.GOOS)
-
-	var homeTrash string
-	if runtime.GOOS == "darwin" {
-		homeTrash = filepath.Join(home, ".Trash")
-	} else {
-		dataHome := os.Getenv("XDG_DATA_HOME")
-		if !filepath.IsAbs(dataHome) {
-			dataHome = filepath.Join(home, ".local", "share")
-		}
-		homeTrash = filepath.Join(dataHome, "Trash")
-	}
-
-	policy, _ := safety.NewPolicy(safety.Config{
-		HardProtectedRoots: []string{
-			dirs.ConfigRoot,
-			dirs.StateRoot,
-			homeTrash,
-		},
-	})
-	journalRepo := journal.New(filepath.Join(dirs.StateRoot, "journal.jsonl"), time.Now)
-	return NewWithDependencies(stdin, stdout, stderr, info, Dependencies{
-		Backend:    backend,
-		Journal:    journalRepo,
-		Repository: journalRepo,
-		Policy:     policy,
-		Config:     defaultConfig,
-		ConfigPath: filepath.Join(dirs.ConfigRoot, "config.toml"),
-	})
 }
 
 func ignoreWrite(_ int, _ error) {}
@@ -152,16 +107,16 @@ func (a *App) runCompatibility(ctx context.Context, args []string) int {
 	if len(request.Operands) == 0 {
 		return 0
 	}
-	if a.dependencies.Backend == nil || a.dependencies.Journal == nil || a.dependencies.Policy == nil {
+	if a.dependencies.Backend == nil || a.dependencies.Repository == nil || a.dependencies.Policy == nil {
 		ignoreWrite(fmt.Fprintln(a.err, "rm: removal infrastructure is not configured"))
 		return 1
 	}
 
-	instance := planner.New(a.dependencies.Policy, id.New)
+	instance := planner.New(a.dependencies.Policy, pathutil.NewID)
 	plan, planningFailures := instance.Plan(ctx, request)
 	executor := removal.NewExecutor(
 		a.dependencies.Backend,
-		a.dependencies.Journal,
+		a.dependencies.Repository,
 		a.dependencies.Policy,
 		removal.NewPrompter(a.stdin, a.err, renderer),
 		a.out,
@@ -315,7 +270,7 @@ func (a *App) runPurge(ctx context.Context, request cli.NativeRequest) int {
 
 	confirmed := request.Yes
 	if !confirmed {
-		prompter := removal.NewPrompter(a.stdin, a.err)
+		prompter := removal.NewPrompter(a.stdin, a.err, nil)
 		confirmed, err = prompter.ConfirmTarget("itens selecionados permanentemente")
 		if err != nil {
 			ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
@@ -323,13 +278,13 @@ func (a *App) runPurge(ctx context.Context, request cli.NativeRequest) int {
 		}
 	}
 
-	purger := restore.NewPurger(a.dependencies.Repository, time.Now)
+	purger := restore.NewPurger(a.dependencies.Repository, time.Now, nil)
 	results := purger.Purge(ctx, records, confirmed)
 	return renderNativeResults(a.out, a.err, results)
 }
 
 func (a *App) runDoctor(ctx context.Context, request cli.NativeRequest) int {
-	findings, err := restore.NewDoctor(a.dependencies.Repository).Check(ctx)
+	findings, err := restore.Check(ctx, a.dependencies.Repository)
 	if err != nil {
 		ignoreWrite(fmt.Fprintf(a.err, "bearm: %v\n", err))
 		return 1

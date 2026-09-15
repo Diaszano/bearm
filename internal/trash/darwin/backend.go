@@ -5,7 +5,6 @@ package darwin
 import (
 	"context"
 	"errors"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -67,11 +66,7 @@ func (b *Backend) Move(
 	}
 
 	deletedAt := b.clock()
-	metadata, err := RenderMetadata(Metadata{
-		SchemaVersion: 1,
-		OriginalPath:  target.AbsolutePath,
-		DeletedAt:     deletedAt.UTC(),
-	})
+	metadata, err := trash.RenderMetadata(target.AbsolutePath, deletedAt)
 	if err != nil {
 		return domain.TrashRecord{}, err
 	}
@@ -88,7 +83,7 @@ func (b *Backend) Move(
 	}
 	defer func() { _ = reservation.Rollback() }()
 
-	if err := os.Rename(target.AbsolutePath, reservation.TargetPath); err != nil {
+	if err := trash.RenameNoReplace(target.AbsolutePath, reservation.TargetPath); err != nil {
 		return domain.TrashRecord{}, err
 	}
 

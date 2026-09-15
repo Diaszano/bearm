@@ -3,10 +3,9 @@ package planner
 import (
 	"os"
 	"path/filepath"
-	"sort"
-	"strings"
 
 	"github.com/Diaszano/bearm/internal/domain"
+	"github.com/Diaszano/bearm/internal/pathutil"
 	"github.com/Diaszano/bearm/internal/platform"
 	"github.com/Diaszano/bearm/internal/safety"
 )
@@ -46,9 +45,6 @@ func ExpandTarget(
 			if err != nil {
 				return err
 			}
-			sort.Slice(children, func(i, j int) bool {
-				return children[i].Name() < children[j].Name()
-			})
 			for _, child := range children {
 				if err := visit(filepath.Join(path, child.Name())); err != nil {
 					return err
@@ -74,7 +70,7 @@ func ExpandTarget(
 	blocked := make(map[string]struct{})
 	for path := range protected {
 		current := path
-		for isEqualOrDescendant(current, root.AbsolutePath) {
+		for pathutil.IsEqualOrDescendant(current, root.AbsolutePath) {
 			blocked[current] = struct{}{}
 			if current == root.AbsolutePath {
 				break
@@ -107,15 +103,4 @@ func ExpandTarget(
 		})
 	}
 	return targets, skipped, nil
-}
-
-func isEqualOrDescendant(path, root string) bool {
-	if path == root {
-		return true
-	}
-	prefix := root
-	if !strings.HasSuffix(prefix, string(filepath.Separator)) {
-		prefix += string(filepath.Separator)
-	}
-	return strings.HasPrefix(path, prefix)
 }

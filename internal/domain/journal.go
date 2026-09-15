@@ -1,9 +1,15 @@
 package domain
 
 import (
+	"context"
 	"errors"
 	"time"
 )
+
+// EventAppender appends lifecycle events.
+type EventAppender interface {
+	AppendEvents(context.Context, []JournalEvent) error
+}
 
 // JournalAction identifies a durable lifecycle event.
 type JournalAction string

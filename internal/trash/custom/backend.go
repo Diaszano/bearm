@@ -3,7 +3,6 @@ package custom
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -74,19 +73,10 @@ func (b *Backend) Move(
 	}
 
 	deletedAt := b.clock()
-	metadata, err := json.Marshal(struct {
-		SchemaVersion int       `json:"schema_version"`
-		OriginalPath  string    `json:"original_path"`
-		DeletedAt     time.Time `json:"deleted_at"`
-	}{
-		SchemaVersion: 1,
-		OriginalPath:  target.AbsolutePath,
-		DeletedAt:     deletedAt.UTC(),
-	})
+	metadata, err := trash.RenderMetadata(target.AbsolutePath, deletedAt)
 	if err != nil {
 		return domain.TrashRecord{}, err
 	}
-	metadata = append(metadata, '\n')
 
 	reservation, err := trash.ReserveName(
 		destination.FilesDir,
@@ -100,7 +90,7 @@ func (b *Backend) Move(
 	}
 	defer func() { _ = reservation.Rollback() }()
 
-	if err := os.Rename(target.AbsolutePath, reservation.TargetPath); err != nil {
+	if err := trash.RenameNoReplace(target.AbsolutePath, reservation.TargetPath); err != nil {
 		return domain.TrashRecord{}, err
 	}
 

@@ -113,3 +113,81 @@ func TestRestoreRenameCreatesUniqueDestination(t *testing.T) {
 		t.Fatalf("restored path = %q", results[0].Path)
 	}
 }
+
+func TestRestoreCollisionOverwriteRejected(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	trashed := filepath.Join(root, "trash", "file.txt")
+	original := filepath.Join(root, "work", "file.txt")
+	for _, path := range []string{trashed, original} {
+		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(path), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	service := restore.NewService(&testutil.Journal{}, time.Now)
+	results := service.Restore(context.Background(), []domain.TrashRecord{{
+		SchemaVersion: 1,
+		ItemID:        "item-1",
+		OperationID:   "operation-1",
+		OriginalPath:  original,
+		TrashedPath:   trashed,
+	}}, restore.CollisionOverwrite)
+
+	if len(results) != 1 || results[0].Status != domain.ItemFailed {
+		t.Fatalf("results = %#v", results)
+	}
+	for _, path := range []string{original, trashed} {
+		if got, err := os.ReadFile(path); err != nil || string(got) != path {
+			t.Fatalf("file changed: %s: %q, %v", path, got, err)
+		}
+	}
+}
+
+func TestRestoreCollisionUnsupported(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	trashed := filepath.Join(root, "trash", "file.txt")
+	original := filepath.Join(root, "work", "file.txt")
+	for _, path := range []string{trashed, original} {
+		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(path), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	service := restore.NewService(&testutil.Journal{}, time.Now)
+	results := service.Restore(context.Background(), []domain.TrashRecord{{
+		OriginalPath: original,
+		TrashedPath:  trashed,
+	}}, "invalid_policy")
+
+	if len(results) != 1 || results[0].Status != domain.ItemFailed {
+		t.Fatalf("results = %#v", results)
+	}
+}
+
+func TestRestoreSourceNotFound(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	trashed := filepath.Join(root, "trash", "not_exist.txt")
+	original := filepath.Join(root, "work", "file.txt")
+
+	service := restore.NewService(&testutil.Journal{}, time.Now)
+	results := service.Restore(context.Background(), []domain.TrashRecord{{
+		OriginalPath: original,
+		TrashedPath:  trashed,
+	}}, restore.CollisionFail)
+
+	if len(results) != 1 || results[0].Status != domain.ItemFailed {
+		t.Fatalf("expected restore to fail due to missing source file, got %#v", results)
+	}
+}

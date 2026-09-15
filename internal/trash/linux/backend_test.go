@@ -207,3 +207,39 @@ func TestBackendMoveRevertsOnIDGeneratorFailure(t *testing.T) {
 		t.Fatalf("metadata was not cleaned up: %d files remain", len(entries))
 	}
 }
+
+func TestBackendName(t *testing.T) {
+	t.Parallel()
+
+	backend := linuxtrash.NewBackend(
+		linuxtrash.RootResolver{},
+		time.Now,
+		func() (string, error) { return "item-1", nil },
+	)
+	if backend.Name() != "linux-freedesktop" {
+		t.Errorf("backend.Name() = %q, want %q", backend.Name(), "linux-freedesktop")
+	}
+}
+
+func TestBackendResolveContextCancelled(t *testing.T) {
+	t.Parallel()
+
+	backend := linuxtrash.NewBackend(
+		linuxtrash.RootResolver{},
+		time.Now,
+		func() (string, error) { return "item-1", nil },
+	)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	target := domain.PlannedTarget{
+		InputPath:    "/tmp/dummy",
+		AbsolutePath: "/tmp/dummy",
+		Kind:         domain.TargetFile,
+	}
+
+	if _, err := backend.Resolve(ctx, target); !errors.Is(err, context.Canceled) {
+		t.Errorf("backend.Resolve() error = %v, want context.Canceled", err)
+	}
+}

@@ -29,7 +29,8 @@ func run() int {
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		home = os.TempDir()
+		fmt.Fprintf(os.Stderr, "bearm: cannot determine home directory: %v\n", err)
+		return 3
 	}
 
 	dirs, err := platform.ResolveDirs(os.Getenv, home, runtime.GOOS)
@@ -62,7 +63,7 @@ func run() int {
 		return 3
 	}
 
-	backend, err := app.NewConfiguredBackend(home, settings)
+	backend, err := app.NewConfiguredBackend(home, dirs, settings)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 3
@@ -72,7 +73,6 @@ func run() int {
 
 	dependencies := app.Dependencies{
 		Backend:    backend,
-		Journal:    journalRepo,
 		Repository: journalRepo,
 		Policy:     policy,
 		Config:     settings,

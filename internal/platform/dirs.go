@@ -65,7 +65,7 @@ func applyAbsoluteOverride(value, fallback string) (string, error) {
 		return fallback, nil
 	}
 	if !filepath.IsAbs(value) {
-		return "", errors.New("Bearm directory overrides must be absolute")
+		return "", errors.New("bearm directory overrides must be absolute")
 	}
 	return filepath.Clean(value), nil
 }

@@ -20,9 +20,6 @@ func ApplyEnvironment(value Config, getenv func(string) string) (Config, error) 
 	if current := getenv("BEARM_TRASH"); current != "" {
 		value.Trash.CustomPath = current
 	}
-	if current := getenv("BEARM_LOG"); current != "" {
-		value.Logging.Level = current
-	}
 
 	var err error
 	if current := getenv("BEARM_TRASH_PER_MOUNT"); current != "" {

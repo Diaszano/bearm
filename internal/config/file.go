@@ -2,7 +2,6 @@ package config
 
 import (
 	"bytes"
-	"errors"
 	"os"
 
 	"github.com/pelletier/go-toml/v2"
@@ -33,14 +32,5 @@ func Load(path string, getenv func(string) string) (Config, error) {
 		return Config{}, err
 	}
 
-	value, err = ApplyEnvironment(value, getenv)
-	if err != nil {
-		return Config{}, err
-	}
-	return value, nil
-}
-
-// IsMissing reports whether a config error is a missing file.
-func IsMissing(err error) bool {
-	return errors.Is(err, os.ErrNotExist)
+	return ApplyEnvironment(value, getenv)
 }

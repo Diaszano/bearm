@@ -24,7 +24,7 @@ func TestExecuteMovesIndependentTargetsAndAppendsJournal(t *testing.T) {
 		backend,
 		journal,
 		policy,
-		removal.NewPrompter(strings.NewReader(""), &output),
+		removal.NewPrompter(strings.NewReader(""), &output, nil),
 		&output,
 	)
 
@@ -62,7 +62,7 @@ func TestExecuteContinuesAfterIndependentFailure(t *testing.T) {
 		backend,
 		journal,
 		policy,
-		removal.NewPrompter(strings.NewReader(""), &output),
+		removal.NewPrompter(strings.NewReader(""), &output, nil),
 		&output,
 	)
 
@@ -95,7 +95,7 @@ func TestExecuteDeclinesOncePromptWithoutMoves(t *testing.T) {
 		backend,
 		journal,
 		policy,
-		removal.NewPrompter(strings.NewReader("no\n"), &output),
+		removal.NewPrompter(strings.NewReader("no\n"), &output, nil),
 		&output,
 	)
 
@@ -134,7 +134,7 @@ func TestExecuteReportsJournalFailure(t *testing.T) {
 		backend,
 		journal,
 		policy,
-		removal.NewPrompter(strings.NewReader(""), &output),
+		removal.NewPrompter(strings.NewReader(""), &output, nil),
 		&output,
 	)
 
@@ -163,7 +163,7 @@ func TestExecuteAcceptsNilVerboseWriter(t *testing.T) {
 		backend,
 		journal,
 		policy,
-		removal.NewPrompter(strings.NewReader(""), &output),
+		removal.NewPrompter(strings.NewReader(""), &output, nil),
 		nil, // nil verbose writer!
 	)
 
@@ -198,7 +198,7 @@ func TestExecuteInteractiveAlways(t *testing.T) {
 		backend,
 		journal,
 		policy,
-		removal.NewPrompter(strings.NewReader("y\nn\n"), &output),
+		removal.NewPrompter(strings.NewReader("y\nn\n"), &output, nil),
 		&output,
 	)
 
@@ -249,7 +249,7 @@ func TestExecuteSafetyPolicyRejection(t *testing.T) {
 		backend,
 		journal,
 		policy,
-		removal.NewPrompter(strings.NewReader(""), &output),
+		removal.NewPrompter(strings.NewReader(""), &output, nil),
 		&output,
 	)
 
@@ -285,7 +285,7 @@ func TestExecuteRejectsTargetInsideResolvedTrashRoot(t *testing.T) {
 		backend,
 		journal,
 		policy,
-		removal.NewPrompter(strings.NewReader(""), &bytes.Buffer{}),
+		removal.NewPrompter(strings.NewReader(""), &bytes.Buffer{}, nil),
 		nil,
 	)
 

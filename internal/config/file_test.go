@@ -62,14 +62,3 @@ func TestLoadRejectsUnknownTOMLField(t *testing.T) {
 		t.Fatal("Load() error = nil, want non-nil")
 	}
 }
-
-func TestIsMissing(t *testing.T) {
-	t.Parallel()
-
-	if !config.IsMissing(os.ErrNotExist) {
-		t.Fatal("IsMissing(os.ErrNotExist) = false, want true")
-	}
-	if config.IsMissing(os.ErrPermission) {
-		t.Fatal("IsMissing(os.ErrPermission) = true, want false")
-	}
-}

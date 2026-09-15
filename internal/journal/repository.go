@@ -101,7 +101,7 @@ func (r *Repository) ReadAll(ctx context.Context) (ReadResult, error) {
 		_ = file.Close()
 	}()
 
-	if err := lockExclusive(file); err != nil {
+	if err := lockShared(file); err != nil {
 		return ReadResult{}, err
 	}
 	defer func() {

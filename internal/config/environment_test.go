@@ -14,7 +14,6 @@ func TestEnvironmentOverridesFileValues(t *testing.T) {
 		"BEARM_COMPAT":          "gnu",
 		"BEARM_TRASH":           "/tmp/bearm-trash",
 		"BEARM_TRASH_PER_MOUNT": "false",
-		"BEARM_LOG":             "debug",
 	}
 	value := config.Default()
 	got, err := config.ApplyEnvironment(value, func(key string) string { return env[key] })
@@ -25,8 +24,7 @@ func TestEnvironmentOverridesFileValues(t *testing.T) {
 	if got.Language != "en" ||
 		got.CompatibilityProfile != "gnu" ||
 		got.Trash.CustomPath != "/tmp/bearm-trash" ||
-		got.Trash.PerMount ||
-		got.Logging.Level != "debug" {
+		got.Trash.PerMount {
 		t.Fatalf("ApplyEnvironment() = %#v", got)
 	}
 }
@@ -43,9 +41,9 @@ func TestEnvironmentRejectsInvalidBoolean(t *testing.T) {
 func TestEnvironmentRejectsInvalidValues(t *testing.T) {
 	t.Parallel()
 
-	env := map[string]string{"BEARM_LOG": "trace"}
+	env := map[string]string{"BEARM_LANG": "invalid"}
 	if _, err := config.ApplyEnvironment(config.Default(), func(key string) string { return env[key] }); err == nil {
-		t.Fatal("ApplyEnvironment() error = nil, want non-nil for invalid log level")
+		t.Fatal("ApplyEnvironment() error = nil, want non-nil for invalid language")
 	}
 }
 

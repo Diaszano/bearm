@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strings"
+
+	"github.com/Diaszano/bearm/internal/pathutil"
 )
 
 // Config contains immutable safety policy inputs.
@@ -59,7 +60,7 @@ func (p *Policy) Check(path string) error {
 	}
 
 	for _, root := range p.hardProtected {
-		if isEqualOrDescendant(cleaned, root) {
+		if pathutil.IsEqualOrDescendant(cleaned, root) {
 			return fmt.Errorf("path is protected by Bearm: %s", root)
 		}
 	}
@@ -72,7 +73,7 @@ func (p *Policy) Check(path string) error {
 		return nil
 	}
 	for _, root := range p.allowed {
-		if isEqualOrDescendant(cleaned, root) {
+		if pathutil.IsEqualOrDescendant(cleaned, root) {
 			return nil
 		}
 	}
@@ -94,15 +95,4 @@ func normalizeRoots(values []string) ([]string, error) {
 		roots = append(roots, filepath.Clean(value))
 	}
 	return roots, nil
-}
-
-func isEqualOrDescendant(path, root string) bool {
-	if path == root {
-		return true
-	}
-	prefix := root
-	if !strings.HasSuffix(prefix, string(filepath.Separator)) {
-		prefix += string(filepath.Separator)
-	}
-	return strings.HasPrefix(path, prefix)
 }

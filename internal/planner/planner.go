@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/platform"
@@ -43,9 +42,8 @@ func (p *Planner) Plan(
 	}
 
 	plan := domain.RemovalPlan{
-		ID:        operationID,
-		CreatedAt: time.Now().UTC(),
-		Request:   request,
+		ID:      operationID,
+		Request: request,
 	}
 	failures := make([]domain.ItemResult, 0)
 	seen := make(map[string]struct{})

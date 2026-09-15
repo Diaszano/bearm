@@ -1,10 +1,7 @@
 // Package domain contains Bearm's infrastructure-independent domain types.
 package domain
 
-import (
-	"errors"
-	"time"
-)
+import "errors"
 
 // CompatibilityProfile selects the rm behavior Bearm emulates.
 type CompatibilityProfile string
@@ -111,7 +108,6 @@ type ValidatedOperand struct {
 // RemovalPlan is the validated set of targets for one operation.
 type RemovalPlan struct {
 	ID                string
-	CreatedAt         time.Time
 	Request           RemoveRequest
 	ValidatedOperands []ValidatedOperand
 	Targets           []PlannedTarget

@@ -14,19 +14,9 @@ type Finding struct {
 	Path    string `json:"path,omitempty"`
 }
 
-// Doctor inspects journal and filesystem consistency.
-type Doctor struct {
-	repository *journal.Repository
-}
-
-// NewDoctor creates a diagnostic service.
-func NewDoctor(repository *journal.Repository) *Doctor {
-	return &Doctor{repository: repository}
-}
-
 // Check returns diagnostics without mutating journal or trash.
-func (d *Doctor) Check(ctx context.Context) ([]Finding, error) {
-	readResult, err := d.repository.ReadAll(ctx)
+func Check(ctx context.Context, repository *journal.Repository) ([]Finding, error) {
+	readResult, err := repository.ReadAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -36,11 +26,11 @@ func (d *Doctor) Check(ctx context.Context) ([]Finding, error) {
 		findings = append(findings, Finding{
 			Code:    "incomplete-journal-line",
 			Message: "journal contains an incomplete trailing line",
-			Path:    d.repository.Path(),
+			Path:    repository.Path(),
 		})
 	}
 
-	active, err := d.repository.ActiveItems(ctx)
+	active, err := repository.ActiveItems(ctx)
 	if err != nil {
 		return nil, err
 	}

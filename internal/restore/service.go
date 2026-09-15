@@ -7,15 +7,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/Diaszano/bearm/internal/domain"
+	"github.com/Diaszano/bearm/internal/trash"
 )
-
-// EventAppender appends lifecycle events.
-type EventAppender interface {
-	AppendEvents(context.Context, []domain.JournalEvent) error
-}
 
 // CollisionPolicy controls restore destination collisions.
 type CollisionPolicy string
@@ -25,18 +22,18 @@ const (
 	CollisionFail CollisionPolicy = "fail"
 	// CollisionRename restores to a unique sibling path.
 	CollisionRename CollisionPolicy = "rename"
-	// CollisionOverwrite permanently removes the destination before restore.
+	// CollisionOverwrite is reserved and rejected by the CLI.
 	CollisionOverwrite CollisionPolicy = "overwrite"
 )
 
 // Service restores active trash records.
 type Service struct {
-	journal EventAppender
+	journal domain.EventAppender
 	clock   func() time.Time
 }
 
 // NewService creates a restore service.
-func NewService(journal EventAppender, clock func() time.Time) *Service {
+func NewService(journal domain.EventAppender, clock func() time.Time) *Service {
 	return &Service{journal: journal, clock: clock}
 }
 
@@ -55,16 +52,8 @@ func (s *Service) Restore(
 			break
 		}
 
-		destination, err := resolveDestination(record.OriginalPath, policy)
+		destination, err := atomicRestore(record.TrashedPath, record.OriginalPath, policy)
 		if err != nil {
-			results = append(results, failed(record.OriginalPath, err))
-			continue
-		}
-		if err := os.MkdirAll(filepath.Dir(destination), 0o700); err != nil {
-			results = append(results, failed(record.OriginalPath, err))
-			continue
-		}
-		if err := os.Rename(record.TrashedPath, destination); err != nil {
 			results = append(results, failed(record.OriginalPath, err))
 			continue
 		}
@@ -89,36 +78,54 @@ func (s *Service) Restore(
 	return results
 }
 
-func resolveDestination(path string, policy CollisionPolicy) (string, error) {
-	_, err := os.Lstat(path)
-	if os.IsNotExist(err) {
-		return path, nil
-	}
-	if err != nil {
+// atomicRestore moves src to dst (or a numbered variant) atomically.
+// It uses RenameNoReplace so that the existence check and the move
+// happen in a single kernel call, eliminating TOCTOU races.
+func atomicRestore(src, dst string, policy CollisionPolicy) (string, error) {
+	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return "", err
 	}
 
+	// Fast path: destination does not exist.
+	if err := trash.RenameNoReplace(src, dst); err == nil {
+		return dst, nil
+	} else if !isExist(err) {
+		if isCrossDevice(err) {
+			return "", fmt.Errorf("restore across filesystems is not supported: source and destination are on different devices")
+		}
+		return "", err
+	}
+
+	// Destination exists — apply collision policy.
 	switch policy {
 	case CollisionFail:
 		return "", errors.New("restore destination already exists")
 	case CollisionRename:
 		for suffix := 1; suffix < 10000; suffix++ {
-			candidate := fmt.Sprintf("%s.restored.%d", path, suffix)
-			if _, err := os.Lstat(candidate); os.IsNotExist(err) {
+			candidate := fmt.Sprintf("%s.restored.%d", dst, suffix)
+			if err := trash.RenameNoReplace(src, candidate); err == nil {
 				return candidate, nil
+			} else if !isExist(err) {
+				return "", err
 			}
 		}
 		return "", errors.New("restore destination limit exceeded")
 	case CollisionOverwrite:
-		if err := os.RemoveAll(path); err != nil {
-			return "", err
-		}
-		return path, nil
+		return "", errors.New("unsupported restore collision policy")
 	default:
 		return "", errors.New("unsupported restore collision policy")
 	}
 }
 
+// isExist reports whether err indicates the target already exists.
+func isExist(err error) bool {
+	return errors.Is(err, syscall.EEXIST) || os.IsExist(err)
+}
+
 func failed(path string, err error) domain.ItemResult {
 	return domain.ItemResult{Path: path, Status: domain.ItemFailed, Err: err}
+}
+
+func isCrossDevice(err error) bool {
+	return errors.Is(err, syscall.EXDEV)
 }

@@ -14,7 +14,6 @@ type Config struct {
 	Trash                TrashConfig   `toml:"trash"`
 	Safety               SafetyConfig  `toml:"safety"`
 	Restore              RestoreConfig `toml:"restore"`
-	Logging              LoggingConfig `toml:"logging"`
 }
 
 // TrashConfig controls platform trash selection.
@@ -36,11 +35,6 @@ type RestoreConfig struct {
 	CollisionPolicy string `toml:"collision_policy"`
 }
 
-// LoggingConfig controls local diagnostic verbosity.
-type LoggingConfig struct {
-	Level string `toml:"level"`
-}
-
 // Default returns exact version 1 platform-independent defaults.
 func Default() Config {
 	return Config{
@@ -56,7 +50,6 @@ func Default() Config {
 			InspectDescendants: false,
 		},
 		Restore: RestoreConfig{CollisionPolicy: "fail"},
-		Logging: LoggingConfig{Level: "error"},
 	}
 }
 
@@ -82,11 +75,6 @@ func (c Config) Validate() error {
 	case "fail", "rename", "overwrite":
 	default:
 		return fmt.Errorf("unsupported restore collision policy %q", c.Restore.CollisionPolicy)
-	}
-	switch c.Logging.Level {
-	case "error", "debug":
-	default:
-		return fmt.Errorf("unsupported logging level %q", c.Logging.Level)
 	}
 	return nil
 }

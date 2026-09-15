@@ -59,10 +59,6 @@ func ReserveName(
 			_ = os.Remove(metadataPath)
 			return Reservation{}, closeErr
 		}
-		if pathExists(targetPath) {
-			_ = os.Remove(metadataPath)
-			continue
-		}
 
 		return Reservation{
 			TargetPath:   targetPath,

@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Diaszano/bearm/internal/app"
 	"github.com/Diaszano/bearm/internal/buildinfo"
 	"github.com/Diaszano/bearm/internal/config"
+	"github.com/Diaszano/bearm/internal/journal"
 	"github.com/Diaszano/bearm/internal/safety"
 	"github.com/Diaszano/bearm/internal/testutil"
 )
@@ -30,10 +33,10 @@ func TestCancelledContextPreventsNewMoves(t *testing.T) {
 		&stderr,
 		buildinfo.Current(),
 		app.Dependencies{
-			Backend: backend,
-			Journal: &testutil.Journal{},
-			Policy:  policy,
-			Config:  config.Default(),
+			Backend:    backend,
+			Repository: journal.New(filepath.Join(t.TempDir(), "journal.jsonl"), time.Now),
+			Policy:     policy,
+			Config:     config.Default(),
 		},
 	)
 

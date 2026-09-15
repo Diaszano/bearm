@@ -6,7 +6,6 @@ package linux
 import (
 	"context"
 	"errors"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -46,9 +45,11 @@ func (b *Backend) Resolve(ctx context.Context, target domain.PlannedTarget) (dom
 	}
 
 	return domain.Destination{
-		Root:     root.Path,
-		FilesDir: filepath.Join(root.Path, "files"),
-		InfoDir:  filepath.Join(root.Path, "info"),
+		Root:             root.Path,
+		FilesDir:         filepath.Join(root.Path, "files"),
+		InfoDir:          filepath.Join(root.Path, "info"),
+		MountPoint:       root.MountPoint,
+		RelativeInfoPath: root.RelativeInfoPath,
 	}, nil
 }
 
@@ -82,12 +83,8 @@ func (b *Backend) Move(
 
 	deletedAt := b.clock()
 	infoPathValue := target.AbsolutePath
-	resolvedRoot, err := b.resolver.Resolve(target.AbsolutePath)
-	if err != nil {
-		return domain.TrashRecord{}, err
-	}
-	if resolvedRoot.RelativeInfoPath {
-		relative, relErr := filepath.Rel(resolvedRoot.MountPoint, target.AbsolutePath)
+	if destination.RelativeInfoPath {
+		relative, relErr := filepath.Rel(destination.MountPoint, target.AbsolutePath)
 		if relErr != nil {
 			return domain.TrashRecord{}, relErr
 		}
@@ -106,7 +103,7 @@ func (b *Backend) Move(
 	}
 	defer func() { _ = reservation.Rollback() }()
 
-	if err := os.Rename(target.AbsolutePath, reservation.TargetPath); err != nil {
+	if err := trash.RenameNoReplace(target.AbsolutePath, reservation.TargetPath); err != nil {
 		return domain.TrashRecord{}, err
 	}
 

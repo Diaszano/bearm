@@ -12,9 +12,9 @@ import (
 
 // CompatibilityRenderer renders profile-specific rm diagnostics.
 type CompatibilityRenderer struct {
-	profile  domain.CompatibilityProfile
-	language i18n.Language
-	program  string
+	profile domain.CompatibilityProfile
+	program string
+	catalog i18n.Catalog
 }
 
 // NewCompatibilityRenderer creates a deterministic compatibility renderer.
@@ -24,9 +24,9 @@ func NewCompatibilityRenderer(
 	program string,
 ) CompatibilityRenderer {
 	return CompatibilityRenderer{
-		profile:  profile,
-		language: language,
-		program:  program,
+		profile: profile,
+		program: program,
+		catalog: i18n.NewCatalog(language),
 	}
 }
 
@@ -43,16 +43,11 @@ func (r CompatibilityRenderer) MissingOperand() string {
 	if r.profile == domain.ProfileBSD {
 		return ""
 	}
-	if r.language == i18n.LanguagePTBR {
-		if r.profile == domain.ProfileGNU {
-			return fmt.Sprintf("%s: operando ausente\nExperimente '%s --help' para mais informações.\n", r.program, r.program)
-		}
-		return fmt.Sprintf("%s: operando ausente\n", r.program)
-	}
+	msg := fmt.Sprintf("%s: %s\n", r.program, r.catalog.Text(i18n.MessageMissingOperand))
 	if r.profile == domain.ProfileGNU {
-		return fmt.Sprintf("%s: missing operand\nTry '%s --help' for more information.\n", r.program, r.program)
+		msg += fmt.Sprintf("%s\n", fmt.Sprintf(r.catalog.Text(i18n.MessageMissingOperandTryHelp), r.program))
 	}
-	return fmt.Sprintf("%s: missing operand\n", r.program)
+	return msg
 }
 
 // UnsupportedOption renders a typed parser usage error.
