@@ -32,9 +32,5 @@ func Load(path string, getenv func(string) string) (Config, error) {
 		return Config{}, err
 	}
 
-	value, err = ApplyEnvironment(value, getenv)
-	if err != nil {
-		return Config{}, err
-	}
-	return value, nil
+	return ApplyEnvironment(value, getenv)
 }
