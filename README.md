@@ -11,7 +11,7 @@ Moves files, directories, and symlinks to your operating system's native trash i
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Platform Support](https://img.shields.io/badge/platform-Linux%20%7C%20macOS-informational?style=flat-square)]()
 [![Architecture](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-informational?style=flat-square)]()
-[![Pure Go](https://img.shields.io/badge/dependencies-zero%20external-brightgreen?style=flat-square)]()
+[![Go](https://img.shields.io/badge/Go-native-brightgreen?style=flat-square)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
 ---
@@ -62,7 +62,7 @@ Alternative trash utilities often introduce slow Python runtimes, non-standard C
 3. **Atomic O(1) directory moves**: Moves entire folders in a single filesystem `rename` operation without walking millions of child files.
 4. **Hardened safety rules**: Strictly refuses to delete `/`, `.`, `..`, your trash folders, or Bearm configuration files.
 5. **Instant restore**: Accidental deletion? Run `bearm restore --last` to instantly bring your files back.
-6. **Zero runtime overhead**: Pure Go static binary, no background daemons, zero telemetry, and zero network calls.
+6. **Zero runtime overhead**: Go binary with no runtime service dependencies, no background daemons, zero telemetry, and zero network calls.
 
 ---
 
@@ -364,7 +364,7 @@ protected_patterns = [        # Glob patterns that Bearm will strictly refuse to
 inspect_descendants = false   # Walk recursive folders to check protected patterns
 
 [restore]
-collision_policy = "fail"     # "fail", "rename", or "overwrite"
+collision_policy = "fail"     # "fail" or "rename"; overwrite is reserved
 ```
 
 ### Key Environment Variables:
