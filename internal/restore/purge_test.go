@@ -36,13 +36,14 @@ func TestPurgeRequiresConfirmation(t *testing.T) {
 func TestPurgeRemovesTargetAndAppendsEvent(t *testing.T) {
 	t.Parallel()
 
-	path := filepath.Join(t.TempDir(), "directory")
+	root := t.TempDir()
+	path := filepath.Join(root, "files", "directory")
 	if err := os.MkdirAll(filepath.Join(path, "sub"), 0o700); err != nil {
 		t.Fatal(err)
 	}
 
 	journal := &testutil.Journal{}
-	purger := restore.NewPurger(journal, time.Now, nil)
+	purger := restore.NewPurger(journal, time.Now, []string{filepath.Join(root, "files")})
 	results := purger.Purge(context.Background(), []domain.TrashRecord{{
 		SchemaVersion: 1,
 		ItemID:        "item-1", OperationID: "operation-1", TrashedPath: path,

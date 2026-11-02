@@ -51,6 +51,41 @@ func setupTestJournal(t *testing.T) (*journal.Repository, string, string, string
 	return repo, original, trashed, root
 }
 
+func TestRunPurgeRejectsPathOutsideResolvedTrash(t *testing.T) {
+	root := t.TempDir()
+	outside := filepath.Join(root, "outside.txt")
+	trash := filepath.Join(root, "trash")
+	if err := os.MkdirAll(trash, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(outside, []byte("keep"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	repo := journal.New(filepath.Join(root, "journal.jsonl"), time.Now)
+	rec := domain.TrashRecord{ItemID: "item", OperationID: "op", OriginalPath: filepath.Join(root, "work", "item"), TrashedPath: outside, Backend: "fake", DeletedAt: time.Now(), Status: "trashed"}
+	if err := repo.Append(context.Background(), []domain.TrashRecord{rec}); err != nil {
+		t.Fatal(err)
+	}
+	var out, stderr bytes.Buffer
+	inst := NewWithDependencies(strings.NewReader(""), &out, &stderr, buildinfo.Current(), Dependencies{Repository: repo, Backend: &purgeTestBackend{files: trash}})
+	if code := inst.Run(context.Background(), []string{"bearm", "purge", "--last", "--yes"}); code == 0 {
+		t.Fatal("purge unexpectedly succeeded")
+	}
+	if _, err := os.Stat(outside); err != nil {
+		t.Fatalf("outside file removed: %v", err)
+	}
+}
+
+type purgeTestBackend struct{ files string }
+
+func (b *purgeTestBackend) Name() string { return "fake" }
+func (b *purgeTestBackend) Resolve(context.Context, domain.PlannedTarget) (domain.Destination, error) {
+	return domain.Destination{Root: filepath.Dir(b.files), FilesDir: b.files}, nil
+}
+func (b *purgeTestBackend) Move(context.Context, domain.PlannedTarget, domain.Destination, string) (domain.TrashRecord, error) {
+	panic("unused")
+}
+
 func TestRunPurge_LastWithYes(t *testing.T) {
 	t.Parallel()
 
@@ -61,7 +96,7 @@ func TestRunPurge_LastWithYes(t *testing.T) {
 		&stdout,
 		&stderr,
 		buildinfo.Current(),
-		Dependencies{Repository: repo},
+		Dependencies{Repository: repo, Backend: &purgeTestBackend{files: filepath.Dir(trashed)}},
 	)
 
 	code := instance.Run(context.Background(), []string{"bearm", "purge", "--last", "--yes"})
@@ -83,7 +118,7 @@ func TestRunPurge_InteractiveConfirm(t *testing.T) {
 		&stdout,
 		&stderr,
 		buildinfo.Current(),
-		Dependencies{Repository: repo},
+		Dependencies{Repository: repo, Backend: &purgeTestBackend{files: filepath.Dir(trashed)}},
 	)
 
 	code := instance.Run(context.Background(), []string{"bearm", "purge", "--last"})
@@ -127,7 +162,7 @@ func TestRunPurge_ByOperation(t *testing.T) {
 		&stdout,
 		&stderr,
 		buildinfo.Current(),
-		Dependencies{Repository: repo},
+		Dependencies{Repository: repo, Backend: &purgeTestBackend{files: filepath.Dir(trashed)}},
 	)
 
 	code := instance.Run(context.Background(), []string{"bearm", "purge", "--operation", "op-456", "--yes"})

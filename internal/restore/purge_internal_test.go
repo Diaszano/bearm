@@ -9,17 +9,17 @@ import (
 )
 
 func TestIsInsideTrash(t *testing.T) {
-	// Empty roots means true
-	if !isInsideTrash("/any/path", nil) {
-		t.Error("expected true for empty roots")
+	// Empty roots do not authorize purge.
+	if isInsideTrash("/any/path", nil) {
+		t.Error("expected false for empty roots")
 	}
 
 	roots := []string{"/trash"}
 	if !isInsideTrash("/trash/file.txt", roots) {
 		t.Error("expected true for file inside root")
 	}
-	if !isInsideTrash("/trash", roots) {
-		t.Error("expected true for root itself")
+	if isInsideTrash("/trash", roots) {
+		t.Error("expected false for root itself")
 	}
 	if isInsideTrash("/other/file.txt", roots) {
 		t.Error("expected false for file outside root")
