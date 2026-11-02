@@ -57,7 +57,7 @@ Finder **Put Back** metadata is not preserved. Bearm's journal and
 
 ## Differential Test Host
 
-macOS CI runs the suite on GitHub-hosted `macos-latest` with both Go 1.24 and
+macOS CI runs the suite on GitHub-hosted `macos-latest` with both Go 1.27.3 and
 stable Go. Each run resolves the installed host `/bin/rm` and selects the BSD
 profile; tests compare exit status, stable streams, and normalized source-tree
 outcomes. The runner image supplies the exact BSD `rm` version, so

@@ -98,10 +98,10 @@ Outras ferramentas de lixeira costumam exigir interpretadores pesados (como Pyth
 
 | Sistema Operacional | Arquitetura | Requisito do Go | Status |
 | :--- | :--- | :--- | :--- |
-| **Linux** | `amd64` (x86_64) | Go 1.24+ | Suporte Total (FreeDesktop Trash) |
-| **Linux** | `arm64` (AArch64) | Go 1.24+ | Suporte Total (FreeDesktop Trash) |
-| **macOS** | `amd64` (Intel) | Go 1.24+ | Suporte Total (Lixeira do Sistema) |
-| **macOS** | `arm64` (Apple Silicon) | Go 1.24+ | Suporte Total (Lixeira do Sistema) |
+| **Linux** | `amd64` (x86_64) | Go 1.27.3+ | Suporte Total (FreeDesktop Trash) |
+| **Linux** | `arm64` (AArch64) | Go 1.27.3+ | Suporte Total (FreeDesktop Trash) |
+| **macOS** | `amd64` (Intel) | Go 1.27.3+ | Suporte Total (Lixeira do Sistema) |
+| **macOS** | `arm64` (Apple Silicon) | Go 1.27.3+ | Suporte Total (Lixeira do Sistema) |
 
 > [!NOTE]
 > O Windows não é suportado. No macOS, metadados de **Colocar de Volta** do Finder não são garantidos; utilize o comando `bearm restore` como autoridade de recuperação.
@@ -114,7 +114,7 @@ O Bearm é distribuído diretamente pelas ferramentas oficiais da linguagem Go o
 
 ### Método 1: via `go install` (Recomendado)
 
-Se você já possui o **Go 1.24 ou superior** instalado em sua máquina, instale a versão mais recente com um único comando:
+Se você já possui o **Go 1.27.3 ou superior** instalado em sua máquina, instale a versão mais recente com um único comando:
 
 ```bash
 go install github.com/Diaszano/bearm/cmd/bearm@latest
