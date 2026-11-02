@@ -75,7 +75,9 @@ Doctor is non-mutating. It reports:
 - an active record whose trash item is missing.
 
 An incomplete final JSONL line is ignored when reconstructing active state but
-is retained for diagnosis.
+is retained for diagnosis. New journal entries are refused until the file is
+restored from a backup or repaired manually; Bearm never discards the damaged
+bytes automatically.
 
 ## Journal Locations
 

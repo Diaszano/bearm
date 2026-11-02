@@ -52,24 +52,6 @@ func (r *Repository) AppendEvents(ctx context.Context, events []domain.JournalEv
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(r.path), 0o700); err != nil {
-		return err
-	}
-	file, err := os.OpenFile(r.path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		_ = file.Close()
-	}()
-
-	if err := lockExclusive(file); err != nil {
-		return err
-	}
-	defer func() {
-		_ = unlock(file)
-	}()
-
 	var buffer bytes.Buffer
 	encoder := json.NewEncoder(&buffer)
 	encoder.SetEscapeHTML(false)
@@ -79,6 +61,31 @@ func (r *Repository) AppendEvents(ctx context.Context, events []domain.JournalEv
 		}
 		if err := encoder.Encode(event); err != nil {
 			return err
+		}
+	}
+
+	if err := os.MkdirAll(filepath.Dir(r.path), 0o700); err != nil {
+		return err
+	}
+	file, err := os.OpenFile(r.path, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0o600)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = file.Close() }()
+	if err := lockExclusive(file); err != nil {
+		return err
+	}
+	defer func() { _ = unlock(file) }()
+
+	if info, err := file.Stat(); err != nil {
+		return err
+	} else if size := info.Size(); size > 0 {
+		last := []byte{0}
+		if _, err := file.ReadAt(last, size-1); err != nil && err != io.EOF {
+			return err
+		}
+		if last[0] != '\n' {
+			return errors.New("cannot append to journal with an incomplete trailing line")
 		}
 	}
 
