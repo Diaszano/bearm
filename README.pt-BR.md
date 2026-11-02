@@ -11,7 +11,7 @@ Move arquivos, diretórios e links simbólicos para a lixeira nativa do seu sist
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Platform Support](https://img.shields.io/badge/plataforma-Linux%20%7C%20macOS-informational?style=flat-square)]()
 [![Architecture](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-informational?style=flat-square)]()
-[![Pure Go](https://img.shields.io/badge/dependências-zero%20externas-brightgreen?style=flat-square)]()
+[![Go](https://img.shields.io/badge/Go-nativo-brightgreen?style=flat-square)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-bem--vindos-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
 ---
@@ -62,7 +62,7 @@ Outras ferramentas de lixeira costumam exigir interpretadores pesados (como Pyth
 3. **Movimentação atômica O(1) de diretórios**: Move pastas inteiras com um único `rename` no filesystem, sem precisar varrer recursivamente milhares de arquivos.
 4. **Proteções rígidas de segurança**: Recusa categoricamente apagar caminhos críticos como `/`, `.`, `..`, pastas de lixeira ativas e arquivos de configuração.
 5. **Restauração instantânea**: Apagou sem querer? Basta rodar `bearm restore --last` para recuperar tudo imediatamente.
-6. **Desempenho puro e zero telemetria**: Binário único e estático em Go, sem processos em segundo plano (daemons), sem telemetria e sem chamadas de rede.
+6. **Desempenho puro e zero telemetria**: Binário Go sem dependências de runtime instaladas à parte, sem processos em segundo plano (daemons), sem telemetria e sem chamadas de rede.
 
 ---
 
@@ -364,7 +364,7 @@ protected_patterns = [        # Padrões glob que o Bearm se recusará estritame
 inspect_descendants = false   # Inspeciona itens filhos em diretórios recursivos
 
 [restore]
-collision_policy = "fail"     # "fail", "rename" ou "overwrite"
+collision_policy = "fail"     # "fail" ou "rename"; overwrite é reservado
 ```
 
 ### Principais Variáveis de Ambiente:
