@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"sync"
-
-	"github.com/Diaszano/bearm/internal/domain"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/journal"
 )
 
