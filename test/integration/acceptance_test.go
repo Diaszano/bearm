@@ -18,7 +18,10 @@ func TestRemoveListRestoreRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	root := t.TempDir()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	binary := filepath.Join(root, "bearm")
 	build := exec.Command("go", "build", "-trimpath", "-o", binary, "./cmd/bearm")
 	build.Dir = repositoryRoot
