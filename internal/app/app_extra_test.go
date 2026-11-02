@@ -21,7 +21,7 @@ import (
 func setupTestJournal(t *testing.T) (*journal.Repository, string, string, string) {
 	t.Helper()
 	root := t.TempDir()
-	trashed := filepath.Join(root, "trash", "file.txt")
+	trashed := filepath.Join(root, "trash", "files", "file.txt")
 	original := filepath.Join(root, "work", "file.txt")
 	if err := os.MkdirAll(filepath.Dir(trashed), 0o700); err != nil {
 		t.Fatal(err)
@@ -41,7 +41,7 @@ func setupTestJournal(t *testing.T) (*journal.Repository, string, string, string
 		OperationID:   "op-456",
 		OriginalPath:  original,
 		TrashedPath:   trashed,
-		Backend:       "fake",
+		Backend:       "custom-trash",
 		DeletedAt:     time.Now(),
 		Status:        "trashed",
 	}
@@ -78,7 +78,7 @@ func TestRunPurgeRejectsPathOutsideResolvedTrash(t *testing.T) {
 
 type purgeTestBackend struct{ files string }
 
-func (b *purgeTestBackend) Name() string { return "fake" }
+func (b *purgeTestBackend) Name() string { return "custom-trash" }
 func (b *purgeTestBackend) Resolve(context.Context, domain.PlannedTarget) (domain.Destination, error) {
 	return domain.Destination{Root: filepath.Dir(b.files), FilesDir: b.files}, nil
 }

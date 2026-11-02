@@ -22,7 +22,7 @@ func TestPurgeRequiresConfirmation(t *testing.T) {
 
 	purger := restore.NewPurger(&testutil.Journal{}, time.Now, nil)
 	results := purger.Purge(context.Background(), []domain.TrashRecord{{
-		ItemID: "item-1", OperationID: "operation-1", TrashedPath: path,
+		ItemID: "item-1", OperationID: "operation-1", TrashedPath: path, Backend: "custom-trash",
 	}}, false)
 
 	if len(results) != 1 || results[0].Status != domain.ItemFailed {
@@ -46,7 +46,7 @@ func TestPurgeRemovesTargetAndAppendsEvent(t *testing.T) {
 	purger := restore.NewPurger(journal, time.Now, []string{filepath.Join(root, "files")})
 	results := purger.Purge(context.Background(), []domain.TrashRecord{{
 		SchemaVersion: 1,
-		ItemID:        "item-1", OperationID: "operation-1", TrashedPath: path,
+		ItemID:        "item-1", OperationID: "operation-1", TrashedPath: path, Backend: "custom-trash",
 	}}, true)
 
 	if len(results) != 1 || results[0].Status != domain.ItemPurged {
