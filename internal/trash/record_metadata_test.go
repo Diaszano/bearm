@@ -36,7 +36,10 @@ func TestRecordMetadataPath(t *testing.T) {
 }
 
 func TestRemoveRecordMetadata(t *testing.T) {
-	root := t.TempDir()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	files := filepath.Join(root, "files")
 	info := filepath.Join(root, "info")
 	if err := os.MkdirAll(files, 0700); err != nil {
@@ -65,7 +68,10 @@ func TestRemoveRecordMetadata(t *testing.T) {
 }
 
 func TestRemoveRecordMetadataRejectsSymlinkDirectory(t *testing.T) {
-	root := t.TempDir()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	outside := filepath.Join(root, "outside")
 	if err := os.Mkdir(outside, 0700); err != nil {
 		t.Fatal(err)
