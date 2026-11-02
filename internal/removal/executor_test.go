@@ -315,3 +315,42 @@ func TestExecuteRejectsTargetInsideResolvedTrashRoot(t *testing.T) {
 		t.Fatalf("Records = %#v, want no journal append", journal.Records)
 	}
 }
+
+type cancelAfterMoveBackend struct {
+	testutil.Backend
+	cancel context.CancelFunc
+}
+
+func (b *cancelAfterMoveBackend) Move(ctx context.Context, target domain.PlannedTarget, dest domain.Destination, op string) (domain.TrashRecord, error) {
+	rec, err := b.Backend.Move(ctx, target, dest, op)
+	if err == nil {
+		b.cancel()
+	}
+	return rec, err
+}
+
+type contextCheckingJournal struct {
+	records []domain.TrashRecord
+	ctxErr  error
+}
+
+func (j *contextCheckingJournal) Append(ctx context.Context, records []domain.TrashRecord) error {
+	j.ctxErr = ctx.Err()
+	if j.ctxErr == nil {
+		j.records = append(j.records, records...)
+	}
+	return j.ctxErr
+}
+func TestExecutePersistsCompletedItemsAfterCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	backend := &cancelAfterMoveBackend{cancel: cancel}
+	j := &contextCheckingJournal{}
+	policy, _ := safety.NewPolicy(safety.Config{})
+	var out bytes.Buffer
+	e := removal.NewExecutor(backend, j, policy, removal.NewPrompter(strings.NewReader(""), &out, nil), nil)
+	plan := domain.RemovalPlan{ID: "op", Request: domain.RemoveRequest{Profile: domain.ProfileGNU}, Targets: []domain.PlannedTarget{{InputPath: "a", AbsolutePath: "/work/a", Kind: domain.TargetFile}, {InputPath: "b", AbsolutePath: "/work/b", Kind: domain.TargetFile}}}
+	result := e.Execute(ctx, plan)
+	if j.ctxErr != nil || len(j.records) != 1 || len(backend.Moved) != 1 || !result.HasFailures() {
+		t.Fatalf("journal=%#v moved=%#v result=%#v ctxerr=%v", j.records, backend.Moved, result, j.ctxErr)
+	}
+}

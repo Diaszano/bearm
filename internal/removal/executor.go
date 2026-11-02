@@ -131,7 +131,7 @@ func (e *Executor) Execute(ctx context.Context, plan domain.RemovalPlan) domain.
 	}
 
 	if len(records) > 0 {
-		if err := e.journal.Append(ctx, records); err != nil {
+		if err := e.journal.Append(context.WithoutCancel(ctx), records); err != nil {
 			result.Items = append(result.Items, domain.ItemResult{
 				Status: domain.ItemFailed,
 				Err:    fmt.Errorf("append operation journal: %w", err),
