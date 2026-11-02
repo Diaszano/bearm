@@ -371,7 +371,7 @@ func TestRunNativeRestoreLast(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
-	trashed := filepath.Join(root, "trash", "file")
+	trashed := filepath.Join(root, "trash", "files", "file")
 	original := filepath.Join(root, "work", "file")
 	if err := os.MkdirAll(filepath.Dir(trashed), 0o700); err != nil {
 		t.Fatal(err)
@@ -387,7 +387,7 @@ func TestRunNativeRestoreLast(t *testing.T) {
 		OperationID:   "operation-1",
 		OriginalPath:  original,
 		TrashedPath:   trashed,
-		Backend:       "fake",
+		Backend:       "custom-trash",
 		DeletedAt:     time.Now(),
 		Status:        "trashed",
 	}

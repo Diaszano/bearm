@@ -16,7 +16,7 @@ func TestRestoreMovesItemBackAndAppendsEvent(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
-	trashed := filepath.Join(root, "trash", "file.txt")
+	trashed := filepath.Join(root, "trash", "files", "file.txt")
 	original := filepath.Join(root, "work", "file.txt")
 	if err := os.MkdirAll(filepath.Dir(trashed), 0o700); err != nil {
 		t.Fatal(err)
@@ -36,7 +36,7 @@ func TestRestoreMovesItemBackAndAppendsEvent(t *testing.T) {
 		OperationID:   "operation-1",
 		OriginalPath:  original,
 		TrashedPath:   trashed,
-		Backend:       "fake",
+		Backend:       "custom-trash",
 		DeletedAt:     time.Now(),
 		Status:        "trashed",
 	}
@@ -57,7 +57,7 @@ func TestRestoreFailsOnDestinationCollision(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
-	trashed := filepath.Join(root, "trash", "file.txt")
+	trashed := filepath.Join(root, "trash", "files", "file.txt")
 	original := filepath.Join(root, "work", "file.txt")
 	for _, path := range []string{trashed, original} {
 		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
@@ -75,6 +75,7 @@ func TestRestoreFailsOnDestinationCollision(t *testing.T) {
 		OperationID:   "operation-1",
 		OriginalPath:  original,
 		TrashedPath:   trashed,
+		Backend:       "custom-trash",
 	}}, restore.CollisionFail)
 
 	if len(results) != 1 || results[0].Status != domain.ItemFailed {
@@ -86,7 +87,7 @@ func TestRestoreRenameCreatesUniqueDestination(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
-	trashed := filepath.Join(root, "trash", "file.txt")
+	trashed := filepath.Join(root, "trash", "files", "file.txt")
 	original := filepath.Join(root, "work", "file.txt")
 	for _, path := range []string{trashed, original} {
 		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
@@ -104,6 +105,7 @@ func TestRestoreRenameCreatesUniqueDestination(t *testing.T) {
 		OperationID:   "operation-1",
 		OriginalPath:  original,
 		TrashedPath:   trashed,
+		Backend:       "custom-trash",
 	}}, restore.CollisionRename)
 
 	if len(results) != 1 || results[0].Status != domain.ItemRestored {
@@ -118,7 +120,7 @@ func TestRestoreCollisionOverwriteRejected(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
-	trashed := filepath.Join(root, "trash", "file.txt")
+	trashed := filepath.Join(root, "trash", "files", "file.txt")
 	original := filepath.Join(root, "work", "file.txt")
 	for _, path := range []string{trashed, original} {
 		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
@@ -136,6 +138,7 @@ func TestRestoreCollisionOverwriteRejected(t *testing.T) {
 		OperationID:   "operation-1",
 		OriginalPath:  original,
 		TrashedPath:   trashed,
+		Backend:       "custom-trash",
 	}}, restore.CollisionOverwrite)
 
 	if len(results) != 1 || results[0].Status != domain.ItemFailed {
@@ -152,7 +155,7 @@ func TestRestoreCollisionUnsupported(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
-	trashed := filepath.Join(root, "trash", "file.txt")
+	trashed := filepath.Join(root, "trash", "files", "file.txt")
 	original := filepath.Join(root, "work", "file.txt")
 	for _, path := range []string{trashed, original} {
 		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
@@ -167,6 +170,7 @@ func TestRestoreCollisionUnsupported(t *testing.T) {
 	results := service.Restore(context.Background(), []domain.TrashRecord{{
 		OriginalPath: original,
 		TrashedPath:  trashed,
+		Backend:      "custom-trash",
 	}}, "invalid_policy")
 
 	if len(results) != 1 || results[0].Status != domain.ItemFailed {
@@ -185,6 +189,7 @@ func TestRestoreSourceNotFound(t *testing.T) {
 	results := service.Restore(context.Background(), []domain.TrashRecord{{
 		OriginalPath: original,
 		TrashedPath:  trashed,
+		Backend:      "custom-trash",
 	}}, restore.CollisionFail)
 
 	if len(results) != 1 || results[0].Status != domain.ItemFailed {
