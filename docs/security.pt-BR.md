@@ -91,6 +91,6 @@ recuperação, mas não substitui um backup.
 
 ## Relato de vulnerabilidade
 
-Siga o processo privado na [política de segurança](../SECURITY.pt-BR.md). Não
-inclua em issues públicas caminhos reais sensíveis, conteúdo de arquivos,
-credenciais ou detalhes de exploração.
+Siga o processo privado na [política de segurança](../SECURITY.md), disponível
+em inglês. Não inclua em issues públicas caminhos reais sensíveis, conteúdo de
+arquivos, credenciais ou detalhes de exploração.
