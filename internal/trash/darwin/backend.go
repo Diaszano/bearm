@@ -1,5 +1,6 @@
 //go:build darwin
 
+// Package darwin implements the macOS system Trash backend.
 package darwin
 
 import (
