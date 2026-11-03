@@ -1,9 +1,19 @@
+# Go build and test artifacts
+/bearm
 /bin/
 /dist/
 /coverage.out
 coverage.html
+*.test
 *.prof
+
+# Local workspace files
 .DS_Store
 .idea/
 .vscode/
 .worktrees/
+
+# Local agent configuration and plans
+.agents/
+.opencode/
+/docs/superpowers/
