@@ -38,7 +38,9 @@ archives:
     files:
       - LICENSE
       - README.md
+      - README.pt-BR.md
       - man/bearm.1
+      - man/bearm.pt-BR.1
 
 checksum:
   name_template: checksums.txt
@@ -81,6 +83,7 @@ homebrew_casks:
       - bearm
     manpages:
       - man/bearm.1
+      - man/bearm.pt-BR.1
 
 changelog:
   use: github-native

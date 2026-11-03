@@ -19,6 +19,9 @@ Moves files, directories, and symlinks to your operating system's native trash i
 
 **Languages:** 🇺🇸 **English** • [🇧🇷 Português](README.pt-BR.md)
 
+English is the source language for public documentation. Brazilian Portuguese
+translations use the `.pt-BR.md` suffix.
+
 </div>
 
 ---
@@ -399,6 +402,8 @@ For a complete description of all options, consult the [Configuration Guide](doc
 | [BSD Compatibility](docs/compatibility/bsd.md) | Detailed parity analysis with BSD/macOS `rm` |
 | [Architecture Overview](docs/architecture/overview.md) | System components, data flow, and no-traversal fast path |
 | [Security Model](docs/security.md) | Threat model, trust boundaries, and safety invariants |
+
+Brazilian Portuguese versions are available alongside each guide as `*.pt-BR.md`.
 
 ---
 

@@ -160,7 +160,7 @@ Valide a instalação:
 bearm version
 ```
 
-Para mais detalhes sobre configuração do ambiente e resolução de caminhos, consulte o [Guia de Instalação (em inglês)](docs/installation.md).
+Para mais detalhes sobre configuração do ambiente e resolução de caminhos, consulte o [Guia de Instalação](docs/installation.pt-BR.md).
 
 ---
 
@@ -338,7 +338,7 @@ O Bearm foi projetado com práticas defensivas em cada camada de execução:
 - **Imunidade a Injeção de Comandos**: As chamadas ao sistema de arquivos são feitas diretamente pelas APIs de baixo nível do Go, sem passar pelo shell.
 - **Resiliência a Falhas de Energia**: O diário JSONL utiliza travas exclusivas de arquivo e chamadas `fsync`, garantindo que uma queda de energia não corrompa o histórico.
 
-Para entender o modelo de ameaças completo, consulte o documento [Security Model (em inglês)](docs/security.md).
+Para entender o modelo de ameaças completo, consulte o [Modelo de Segurança](docs/security.pt-BR.md).
 
 ---
 
@@ -383,7 +383,7 @@ collision_policy = "fail"     # "fail" ou "rename"; overwrite é reservado
 | `BEARM_DATA_HOME`  | Caminho absoluto para o diretório de dados |
 | `BEARM_TRASH`      | Caminho absoluto para raiz personalizada de lixeira |
 
-Consulte o [Guia de Configuração (em inglês)](docs/configuration.md) para todos os detalhes técnicos.
+Consulte o [Guia de Configuração](docs/configuration.pt-BR.md) para todos os detalhes técnicos.
 
 ---
 
@@ -391,20 +391,20 @@ Consulte o [Guia de Configuração (em inglês)](docs/configuration.md) para tod
 
 | Documento | Descrição |
 | :--- | :--- |
-| [Guia de Instalação](docs/installation.md) | Instruções aprofundadas sobre PATH, binários e shells |
-| [Referência da CLI](docs/cli.md) | Lista completa de comandos, flags, opções e códigos de saída |
-| [Guia de Configuração](docs/configuration.md) | Especificação do TOML, escopos de segurança e variáveis |
-| [Recuperação e Diário](docs/recovery.md) | Ciclo de vida dos itens, formato JSONL e procedimentos de desastre |
-| [Compatibilidade GNU](docs/compatibility/gnu.md) | Análise de paridade com o `rm` do GNU coreutils |
-| [Compatibilidade BSD](docs/compatibility/bsd.md) | Análise de paridade com o `rm` do BSD/macOS |
-| [Visão Geral da Arquitetura](docs/architecture/overview.md) | Estrutura de pacotes, fluxo de dados e caminho rápido O(1) |
-| [Modelo de Segurança](docs/security.md) | Limites de confiança, invariantes de segurança e mitigação de riscos |
+| [Guia de Instalação](docs/installation.pt-BR.md) | Instruções aprofundadas sobre PATH, binários e shells |
+| [Referência da CLI](docs/cli.pt-BR.md) | Lista completa de comandos, flags, opções e códigos de saída |
+| [Guia de Configuração](docs/configuration.pt-BR.md) | Especificação do TOML, escopos de segurança e variáveis |
+| [Recuperação e Diário](docs/recovery.pt-BR.md) | Ciclo de vida dos itens, formato JSONL e procedimentos de recuperação |
+| [Compatibilidade GNU](docs/compatibility/gnu.pt-BR.md) | Análise de compatibilidade com o `rm` do GNU coreutils |
+| [Compatibilidade BSD](docs/compatibility/bsd.pt-BR.md) | Análise de compatibilidade com o `rm` do BSD/macOS |
+| [Visão Geral da Arquitetura](docs/architecture/overview.pt-BR.md) | Estrutura de pacotes, fluxo de dados e caminho rápido O(1) |
+| [Modelo de Segurança](docs/security.pt-BR.md) | Limites de confiança, invariantes de segurança e mitigação de riscos |
 
 ---
 
 ## 🤝 Contribuindo
 
-Contribuições são muito bem-vindas! Leia o arquivo [CONTRIBUTING.md](CONTRIBUTING.md) para entender os padrões de código, testes de compatibilidade diferencial e diretrizes para pull requests.
+Contribuições são muito bem-vindas! Leia o [guia de contribuição](CONTRIBUTING.pt-BR.md) para entender os padrões de código, testes de compatibilidade diferencial e diretrizes para pull requests.
 
 ---
 

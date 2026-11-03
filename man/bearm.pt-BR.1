@@ -1,0 +1,242 @@
+.TH BEARM 1 "Novembro de 2026" "Bearm" "Comandos do usuário"
+.SH NOME
+bearm \- remova com segurança e restaure com confiança
+.SH SINOPSE
+.B bearm rm
+.RI [ OPÇÕES ] " ALVO" ...
+.br
+.B bearm list
+.RI [ --limit " N" ]
+.RI [ --json ]
+.br
+.B bearm restore
+.IR ID_ITEM ...
+.br
+.B bearm restore
+.BR --operation " " ID_OPERAÇÃO
+.br
+.B bearm restore --last
+.br
+.B bearm purge
+.IR ID_ITEM ...
+.RI [ --yes ]
+.br
+.B bearm doctor
+.RI [ --json ]
+.br
+.B bearm config
+.BR path | check
+.br
+.B bearm version
+.SH DESCRIÇÃO
+O Bearm é uma substituição nativa e segura para o
+.BR rm (1)
+do Unix. A remoção no modo de compatibilidade move arquivos, links simbólicos
+e diretórios para a lixeira do sistema operacional em vez de excluí-los
+permanentemente. Os comandos nativos listam, restauram, purgam e diagnosticam
+itens na lixeira gerenciados pelo Bearm.
+.PP
+O Bearm usa operações diretas no sistema de arquivos, não acessa a rede durante
+a execução e não envia telemetria.
+.SH MODO DE COMPATIBILIDADE
+O modo de compatibilidade é selecionado pelo subcomando
+.B rm
+ou quando o nome do executável é
+.BR rm .
+O Linux seleciona o perfil GNU e o macOS seleciona o perfil BSD por padrão.
+.B BEARM_COMPAT
+pode selecionar
+.BR gnu ,
+.BR bsd
+ou
+.BR posix .
+.PP
+O parsing GNU aceita opções após os operandos até
+.BR -- .
+O parsing BSD e POSIX para no primeiro operando. Opções de força e interação
+são aplicadas da esquerda para a direita. Operações bem-sucedidas não exibem
+saída, salvo quando o modo detalhado está ativo.
+.SH COMANDOS NATIVOS
+.TP
+.B list
+Lista itens ativos na lixeira. Use
+.B --limit
+para limitar resultados de texto ou JSON, e
+.B --json
+para registros legíveis por máquina.
+.TP
+.B restore
+Restaura IDs de itens;
+.B --operation
+restaura uma operação; ou
+.B --last
+restaura a operação ativa mais recente.
+.TP
+.B purge
+Exclui permanentemente itens ativos selecionados. Exige confirmação
+interativa ou
+.BR --yes .
+.TP
+.B doctor
+Relata dados incompletos do diário ou itens ativos ausentes na lixeira. Use
+.B --json
+para resultados legíveis por máquina.
+.TP
+.B config path
+Exibe o caminho ativo do arquivo TOML de configuração.
+.TP
+.B config check
+Valida a configuração ativa.
+.TP
+.B version
+Exibe a versão do Bearm, commit e data do build.
+.SH OPÇÕES
+.TP
+.BR -f , " " --force
+Ignora alvos inexistentes e desativa comportamento interativo anterior.
+.TP
+.BR -i , " " --interactive=always
+Pergunta antes de cada alvo lógico.
+.TP
+.BR -I , " " --interactive=once
+Pergunta uma vez para solicitações recursivas ou grandes.
+.TP
+.B --interactive=never
+Desativa perguntas no perfil GNU.
+.TP
+.BR -r , " " -R , " " --recursive
+Permite remover diretórios.
+.TP
+.BR -d , " " --dir , " " --directory
+Permite remover diretórios vazios sem modo recursivo.
+.TP
+.BR -v , " " --verbose
+Exibe cada remoção lógica bem-sucedida.
+.TP
+.B --one-file-system
+Não atravessa limites de montagem quando a travessia do perfil GNU é
+necessária.
+.TP
+.BR --preserve-root [ =all ]
+Protege a raiz do sistema ou diretórios em dispositivo diferente do pai.
+.TP
+.B --no-preserve-root
+Desativa a proteção de raiz de compatibilidade GNU. A proteção rígida do
+Bearm para
+.B /
+continua ativa.
+.TP
+.B --
+Encerra o parsing de opções.
+.SH CONFIGURAÇÃO
+O Bearm carrega os padrões, a configuração TOML estrita e depois substituições
+do ambiente. Campos TOML desconhecidos e valores inválidos são rejeitados
+antes de alterar o sistema de arquivos.
+.PP
+O esquema completo versão 1 e as regras de precedência estão documentados em
+.IR docs/configuration.pt-BR.md .
+.SH AMBIENTE
+.TP
+.B BEARM_LANG
+Idioma nativo:
+.B pt-BR
+ou
+.BR en .
+.TP
+.B BEARM_COMPAT
+Perfil de compatibilidade:
+.BR gnu ,
+.BR bsd
+ou
+.BR posix .
+.TP
+.B BEARM_TRASH
+Raiz absoluta para lixeira personalizada.
+.TP
+.B BEARM_TRASH_PER_MOUNT
+Substituição booleana de roteamento por montagem no Linux.
+.TP
+.B BEARM_LOG
+Nível de diagnóstico local:
+.B error
+ou
+.BR debug .
+.TP
+.BR BEARM_CONFIG_HOME , " " BEARM_STATE_HOME , " " BEARM_DATA_HOME
+Substituições absolutas dos diretórios do Bearm.
+.TP
+.BR XDG_CONFIG_HOME , " " XDG_STATE_HOME , " " XDG_DATA_HOME
+Substituições das pastas base no Linux.
+.TP
+.BR LC_ALL , " " LC_MESSAGES , " " LANG
+Precedência da localidade dos diagnósticos de compatibilidade.
+.SH ARQUIVOS
+.TP
+.I $XDG_CONFIG_HOME/bearm/config.toml
+Configuração Linux, com alternativa em
+.IR $HOME/.config/bearm/config.toml .
+.TP
+.I $XDG_STATE_HOME/bearm/journal.jsonl
+Diário Linux, com alternativa em
+.IR $HOME/.local/state/bearm/journal.jsonl .
+.TP
+.I $XDG_DATA_HOME/Trash
+Lixeira principal do usuário no Linux, com alternativa em
+.IR $HOME/.local/share/Trash .
+.TP
+.I $HOME/Library/Application Support/Bearm/config.toml
+Configuração no macOS.
+.TP
+.I $HOME/Library/Application Support/Bearm/state/journal.jsonl
+Diário no macOS.
+.TP
+.I $HOME/.Trash
+Lixeira do volume principal no macOS.
+.SH CÓDIGO DE SAÍDA
+O modo de compatibilidade retorna 0 em caso de sucesso, 1 para falha de uso
+GNU ou falha operacional, e 64 para falha de uso BSD.
+.PP
+O modo nativo retorna 0 em caso de sucesso, 1 para falha operacional, 2 para
+uso inválido e 3 para configuração inválida ou substituições de diretório.
+.SH SEGURANÇA
+O Bearm rejeita a raiz do sistema, operandos ponto e ponto-ponto, suas pastas
+de configuração, estado, dados e raízes resolvidas da lixeira. Links
+simbólicos finais são movidos como links e seus destinos não são seguidos.
+.PP
+Nomes de destino e metadados são reservados com criação exclusiva. Uma
+movimentação para lixeira personalizada que atravesse sistemas de arquivos
+falha sem copiar ou excluir a origem. Somente
+.B purge
+nativo exclui permanentemente itens do Bearm.
+.SH LIMITAÇÕES
+Windows não é compatível. Metadados Colocar de Volta do Finder não são
+garantidos. Cópia entre sistemas de arquivos para lixeira personalizada não é
+suportada. As semânticas BSD
+.B -P
+e
+.B -W
+não são implementadas. A lixeira não substitui um backup.
+.SH EXEMPLOS
+.PP
+Mover um arquivo para a lixeira:
+.PP
+.EX
+bearm rm documento.txt
+.EE
+.PP
+Restaurar o último conjunto removido:
+.PP
+.EX
+bearm restore --last
+.EE
+.PP
+Purgar permanentemente um item após confirmação:
+.PP
+.EX
+bearm purge ID_ITEM
+.EE
+.SH VEJA TAMBÉM
+.BR rm (1),
+.IR docs/cli.pt-BR.md,
+.IR docs/recovery.pt-BR.md,
+.IR docs/security.pt-BR.md .

@@ -13,29 +13,19 @@ automatically selects the required toolchain when needed.
 
 ## Workflow
 
-1. Configure local git hooks to automatically enforce Conventional Commits:
-
-   ```bash
-   make hooks
-   ```
-
-2. Create a conventional English branch name such as
+1. Create a conventional English branch name such as
    `feat/linux-trash-backend`, `fix/restore-collision`, or
    `docs/configuration`.
-3. Write a failing test for each behavior change and confirm the failure is
+2. Write a failing test for each behavior change and confirm the failure is
    caused by the missing behavior.
-4. Implement the smallest change that passes the test.
-5. Run:
+3. Implement the smallest change that passes the test.
+4. Run:
 
    ```bash
    make verify
    ```
 
-6. Keep each task in one focused Conventional Commit. You can verify your commits anytime with:
-
-   ```bash
-   make check-commits
-   ```
+5. Keep each task in one focused Conventional Commit.
 
 ### Conventional Commits Specification
 
@@ -71,8 +61,9 @@ test: cover GNU option precedence
 chore: update dependencies
 ```
 
-Do not add AI attribution trailers. Source code, identifiers, comments,
-technical documentation, branches, and commits are written in English.
+Do not add AI attribution trailers. Source code, identifiers, and comments are
+written in English. English is the source language for public documentation;
+provide a matching Brazilian Portuguese (`.pt-BR.md`) version when updating it.
 
 ## Compatibility Changes
 
