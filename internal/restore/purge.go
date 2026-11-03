@@ -9,6 +9,7 @@ import (
 
 	"github.com/Diaszano/bearm/internal/domain"
 	"github.com/Diaszano/bearm/internal/pathutil"
+	"github.com/Diaszano/bearm/internal/trash"
 )
 
 // Purger permanently removes explicitly selected trash items.
@@ -53,12 +54,16 @@ func (p *Purger) Purge(
 			continue
 		}
 
+		metadataErr := trash.RemoveRecordMetadata(record)
 		purged := record
 		purged.Status = "purged"
 		events = append(events, purged.Event(domain.JournalPurged, p.clock()))
 		results = append(results, domain.ItemResult{
 			Path: record.TrashedPath, Status: domain.ItemPurged, Record: &purged,
 		})
+		if metadataErr != nil {
+			results = append(results, failed(record.TrashedPath, fmt.Errorf("remove trash metadata: %w", metadataErr)))
+		}
 	}
 
 	if len(events) > 0 {

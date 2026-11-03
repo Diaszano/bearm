@@ -58,6 +58,7 @@ func (s *Service) Restore(
 			continue
 		}
 
+		metadataErr := trash.RemoveRecordMetadata(record)
 		restored := record
 		restored.OriginalPath = destination
 		restored.Status = "restored"
@@ -67,6 +68,9 @@ func (s *Service) Restore(
 			Status: domain.ItemRestored,
 			Record: &restored,
 		})
+		if metadataErr != nil {
+			results = append(results, failed(record.TrashedPath, fmt.Errorf("remove trash metadata: %w", metadataErr)))
+		}
 	}
 
 	if len(events) > 0 {
