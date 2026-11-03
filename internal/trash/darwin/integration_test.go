@@ -4,6 +4,7 @@ package darwin_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -103,8 +104,11 @@ func TestConcurrentDarwinMovesUseUniqueNames(t *testing.T) {
 				errs <- err
 				return
 			}
-			if _, err := os.Lstat(path); !os.IsNotExist(err) {
-				errs <- fmt.Errorf("source still exists: %v", err)
+			if _, err := os.Lstat(path); err == nil {
+				errs <- errors.New("source still exists")
+				return
+			} else if !os.IsNotExist(err) {
+				errs <- fmt.Errorf("check source after move: %w", err)
 				return
 			}
 			paths <- record.TrashedPath
