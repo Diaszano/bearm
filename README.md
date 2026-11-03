@@ -111,7 +111,7 @@ Alternative trash utilities often introduce slow Python runtimes, non-standard C
 
 ## 📦 Installation
 
-Bearm is distributed directly via Go tooling and source builds. No third-party package managers are needed.
+Bearm is available via `go install`, local source builds, and Homebrew from the project's official tap.
 
 ### Method 1: via `go install` (Recommended)
 
@@ -127,15 +127,13 @@ Make sure your Go binary path (usually `~/go/bin` or `$(go env GOPATH)/bin`) is 
 export PATH="$(go env GOPATH)/bin:$PATH"
 ```
 
-Verify the installation:
+### Method 2: Install via Homebrew
 
 ```bash
-bearm version
+brew install Diaszano/tap/bearm
 ```
 
----
-
-### Method 2: Build from Source
+### Method 3: Build from Source
 
 Build directly on your machine with full compiler optimization:
 
@@ -155,6 +153,12 @@ install -m 0755 bin/bearm "$HOME/.local/bin/bearm"
 ```
 
 Ensure `$HOME/.local/bin` is in your `$PATH`.
+
+Verify the installation:
+
+```bash
+bearm version
+```
 
 For in-depth setup and environment configuration, see the [Installation Guide](docs/installation.md).
 

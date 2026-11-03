@@ -17,7 +17,7 @@ This guide covers installing, building, and configuring **Bearm** on supported U
 
 ## Installation Methods
 
-Bearm is distributed exclusively via **`go install`** and **direct source compilation**. No third-party package managers (such as Homebrew or APT) are required or maintained.
+Bearm is available via **`go install`**, **Homebrew** from the project's official tap, and direct source compilation.
 
 ### Method 1: Install via `go install` (Recommended)
 
@@ -54,7 +54,13 @@ bearm version
 
 ---
 
-### Method 2: Build from Source
+### Method 2: Install via Homebrew
+
+```bash
+brew install Diaszano/tap/bearm
+```
+
+### Method 3: Build from Source
 
 Building locally gives you full control over compilation flags and reproducible builds.
 

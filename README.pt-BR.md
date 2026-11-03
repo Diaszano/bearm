@@ -73,7 +73,7 @@ Outras ferramentas de lixeira costumam exigir interpretadores pesados (como Pyth
 | :--- | :---: | :---: | :---: | :---: |
 | **Recuperação / Desfazer** | ❌ Não (Permanente) | ✅ Sim | ✅ Sim | 🛡️ **Sim (`restore --last`)** |
 | **Compatibilidade de Flags `rm`** | ✅ Nativo | ❌ Flags incompatíveis | ⚠️ Parcial | 🎯 **Total (GNU & BSD)** |
-| **Caminho Rápido para Pastas** | N/A | ❌ Varrredura recursiva | ❌ Varredura recursiva | ⚡ **Atômico O(1)** |
+| **Caminho Rápido para Pastas** | N/A | ❌ Varredura recursiva | ❌ Varredura recursiva | ⚡ **Atômico O(1)** |
 | **Proteção Rígida da Raiz** | ⚠️ `--preserve-root` | ⚠️ Inconsistente | ❌ Mínima | 🔒 **Estrita (`/`, `..`, lixeira, config)** |
 | **Padrão de Lixeira do SO** | ❌ Não usa | ⚠️ Apenas Linux | ⚠️ Apenas macOS | 🍏🐧 **Nativo no Linux e macOS** |
 | **Diário de Auditoria (Journal)** | ❌ Nenhum | ⚠️ Metadados básicos | ❌ Nenhum | 📜 **Append-only em JSONL** |
@@ -111,7 +111,7 @@ Outras ferramentas de lixeira costumam exigir interpretadores pesados (como Pyth
 
 ## 📦 Instalação
 
-O Bearm é distribuído diretamente pelas ferramentas oficiais da linguagem Go ou por compilação local a partir do código-fonte. Não há necessidade de gerenciadores de pacotes de terceiros (como Homebrew).
+O Bearm está disponível via `go install`, compilação local e Homebrew pelo tap oficial do projeto.
 
 ### Método 1: via `go install` (Recomendado)
 
@@ -127,15 +127,13 @@ Certifique-se de que a pasta de binários do Go (geralmente `~/go/bin` ou `$(go 
 export PATH="$(go env GOPATH)/bin:$PATH"
 ```
 
-Valide a instalação:
+### Método 2: via Homebrew
 
 ```bash
-bearm version
+brew install Diaszano/tap/bearm
 ```
 
----
-
-### Método 2: Compilar a partir do Código-Fonte
+### Método 3: Compilar a partir do Código-Fonte
 
 Compile o binário diretamente no seu computador para ter controle total:
 
@@ -155,6 +153,12 @@ install -m 0755 bin/bearm "$HOME/.local/bin/bearm"
 ```
 
 Certifique-se de que `$HOME/.local/bin` está presente no seu `$PATH`.
+
+Valide a instalação:
+
+```bash
+bearm version
+```
 
 Para mais detalhes sobre configuração do ambiente e resolução de caminhos, consulte o [Guia de Instalação (em inglês)](docs/installation.md).
 
