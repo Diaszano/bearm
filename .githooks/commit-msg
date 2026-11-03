@@ -1,0 +1,81 @@
+#!/bin/sh
+# .githooks/commit-msg
+# Enforces Conventional Commits v1.0.0 (https://www.conventionalcommits.org/)
+
+set -e
+
+COMMIT_MSG_FILE="$1"
+
+if [ -z "$COMMIT_MSG_FILE" ] || [ ! -f "$COMMIT_MSG_FILE" ]; then
+    echo "commit-msg hook: missing or unreadable commit message file" >&2
+    exit 1
+fi
+
+# Extract the first non-empty, non-comment line (the commit subject)
+SUBJECT=$(grep -v '^[[:space:]]*#' "$COMMIT_MSG_FILE" | grep -v '^[[:space:]]*$' | head -n 1 || true)
+
+if [ -z "$SUBJECT" ]; then
+    echo "commit-msg hook: commit message is empty" >&2
+    exit 1
+fi
+
+# Allow automated git merge commits
+case "$SUBJECT" in
+    Merge\ *|Revert\ \"*|revert\ \"*|Apply\ patch\ *)
+        exit 0
+        ;;
+esac
+
+# Regular expression for Conventional Commits
+# Format: <type>(<scope>)?: <subject> or <type>(<scope>)?!: <subject>
+TYPES="feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
+PATTERN="^($TYPES)(\([a-zA-Z0-9_\-\./]+\))?(!)?: .+$"
+
+if ! echo "$SUBJECT" | grep -Eq "$PATTERN"; then
+    cat >&2 << 'EOF'
+================================================================================
+❌ INVALID COMMIT MESSAGE FORMAT (Conventional Commits violation)
+================================================================================
+Your commit message does not match the Conventional Commits specification.
+
+Detected message:
+EOF
+    echo "  \"$SUBJECT\"" >&2
+    cat >&2 << 'EOF'
+
+Expected format:
+  <type>(<scope>): <subject>
+  <type>: <subject>
+  <type>!: <breaking change description>
+
+Allowed types:
+  feat     A new feature
+  fix      A bug fix
+  docs     Documentation changes
+  style    Formatting, missing semi colons, etc (no code logic changes)
+  refactor Refactoring code without changing observable behavior
+  perf     A code change that improves performance
+  test     Adding or correcting tests
+  build    Changes affecting build system or external dependencies
+  ci       Changes to CI/CD configuration and scripts
+  chore    Other maintenance tasks that do not modify src or test files
+  revert   Reverts a previous commit
+
+Examples:
+  feat: add FreeDesktop trash metadata
+  feat(cli): add native help command
+  fix(trash): support filesystems without renameat2
+  docs(recovery): explain journal repair procedure
+  test: cover GNU option precedence
+  chore: update dependencies
+================================================================================
+EOF
+    exit 1
+fi
+
+# Optional rule: warn if subject ends with period
+if echo "$SUBJECT" | grep -Eq '\.$'; then
+    echo "⚠️  Warning: Conventional commit subject should not end with a period ('.')." >&2
+fi
+
+exit 0

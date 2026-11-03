@@ -13,27 +13,62 @@ automatically selects the required toolchain when needed.
 
 ## Workflow
 
-1. Create a conventional English branch name such as
+1. Configure local git hooks to automatically enforce Conventional Commits:
+
+   ```bash
+   make hooks
+   ```
+
+2. Create a conventional English branch name such as
    `feat/linux-trash-backend`, `fix/restore-collision`, or
    `docs/configuration`.
-2. Write a failing test for each behavior change and confirm the failure is
+3. Write a failing test for each behavior change and confirm the failure is
    caused by the missing behavior.
-3. Implement the smallest change that passes the test.
-4. Run:
+4. Implement the smallest change that passes the test.
+5. Run:
 
    ```bash
    make verify
    ```
 
-5. Keep each task in one focused Conventional Commit.
+6. Keep each task in one focused Conventional Commit. You can verify your commits anytime with:
+
+   ```bash
+   make check-commits
+   ```
+
+### Conventional Commits Specification
+
+All commit messages and Pull Request titles must follow the [Conventional Commits v1.0.0](https://www.conventionalcommits.org/) specification:
+
+```text
+<type>(<optional scope>): <description>
+```
+
+#### Allowed Types:
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect code logic (formatting, white-space)
+- `refactor`: Code changes that neither fix a bug nor add a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `build`: Changes that affect the build system or external dependencies
+- `ci`: Changes to CI configuration files and scripts
+- `chore`: Other changes that don't modify src or test files
+- `revert`: Reverts a previous commit
+
+#### Breaking Changes:
+Append `!` before the colon (e.g., `feat(api)!: change default restore policy`) or include `BREAKING CHANGE:` in the commit footer.
 
 Commit examples:
 
 ```text
-feat: add FreeDesktop trash metadata
-fix: retain dangling symlink targets
+feat(cli): add native help command
+fix(trash): support filesystems without renameat2
+docs(recovery): explain journal repair procedure
 test: cover GNU option precedence
-docs: explain restore collisions
+chore: update dependencies
 ```
 
 Do not add AI attribution trailers. Source code, identifiers, comments,
