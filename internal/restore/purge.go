@@ -62,7 +62,7 @@ func (p *Purger) Purge(
 	}
 
 	if len(events) > 0 {
-		if err := p.journal.AppendEvents(ctx, events); err != nil {
+		if err := p.journal.AppendEvents(context.WithoutCancel(ctx), events); err != nil {
 			results = append(results, failed("", fmt.Errorf("append purge journal: %w", err)))
 		}
 	}

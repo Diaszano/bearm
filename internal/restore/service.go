@@ -70,7 +70,7 @@ func (s *Service) Restore(
 	}
 
 	if len(events) > 0 {
-		if err := s.journal.AppendEvents(ctx, events); err != nil {
+		if err := s.journal.AppendEvents(context.WithoutCancel(ctx), events); err != nil {
 			results = append(results, failed("", fmt.Errorf("append restore journal: %w", err)))
 		}
 	}
