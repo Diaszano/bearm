@@ -404,7 +404,7 @@ Consulte o [Guia de Configuração](docs/configuration.pt-BR.md) para todos os d
 
 ## 🤝 Contribuindo
 
-Contribuições são muito bem-vindas! Leia o [guia de contribuição](CONTRIBUTING.pt-BR.md) para entender os padrões de código, testes de compatibilidade diferencial e diretrizes para pull requests.
+Contribuições são muito bem-vindas! Consulte o [guia de contribuição](CONTRIBUTING.md), disponível em inglês, para entender os padrões de código, testes de compatibilidade diferencial e diretrizes para pull requests.
 
 ---
 
