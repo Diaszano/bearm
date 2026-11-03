@@ -72,10 +72,10 @@ func (p *Purger) Purge(
 
 func isInsideTrash(path string, roots []string) bool {
 	if len(roots) == 0 {
-		return true
+		return false
 	}
 	for _, root := range roots {
-		if pathutil.IsEqualOrDescendant(path, root) {
+		if path != root && pathutil.IsEqualOrDescendant(path, root) {
 			return true
 		}
 	}

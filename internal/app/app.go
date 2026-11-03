@@ -295,7 +295,20 @@ func (a *App) runPurge(ctx context.Context, request cli.NativeRequest) int {
 		}
 	}
 
-	purger := restore.NewPurger(a.dependencies.Repository, time.Now, nil)
+	roots := make([]string, 0, len(records))
+	for _, record := range records {
+		if a.dependencies.Backend == nil || a.dependencies.Backend.Name() != record.Backend {
+			roots = nil
+			break
+		}
+		destination, err := a.dependencies.Backend.Resolve(ctx, domain.PlannedTarget{AbsolutePath: record.OriginalPath})
+		if err != nil {
+			roots = nil
+			break
+		}
+		roots = append(roots, destination.FilesDir)
+	}
+	purger := restore.NewPurger(a.dependencies.Repository, time.Now, roots)
 	results := purger.Purge(ctx, records, confirmed)
 	return renderNativeResults(a.out, a.err, results)
 }
