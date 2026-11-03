@@ -12,6 +12,7 @@ Moves files, directories, and symlinks to your operating system's native trash i
 [![Platform Support](https://img.shields.io/badge/platform-Linux%20%7C%20macOS-informational?style=flat-square)]()
 [![Architecture](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-informational?style=flat-square)]()
 [![Go](https://img.shields.io/badge/Go-native-brightgreen?style=flat-square)]()
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=flat-square)](https://conventionalcommits.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
 ---
