@@ -98,10 +98,10 @@ Alternative trash utilities often introduce slow Python runtimes, non-standard C
 
 | Operating System | Architecture | Go Requirement | Status |
 | :--- | :--- | :--- | :--- |
-| **Linux** | `amd64` (x86_64) | Go 1.24+ | Fully Supported (FreeDesktop Trash) |
-| **Linux** | `arm64` (AArch64) | Go 1.24+ | Fully Supported (FreeDesktop Trash) |
-| **macOS** | `amd64` (Intel) | Go 1.24+ | Fully Supported (Native Trash) |
-| **macOS** | `arm64` (Apple Silicon) | Go 1.24+ | Fully Supported (Native Trash) |
+| **Linux** | `amd64` (x86_64) | Go 1.27.3+ | Fully Supported (FreeDesktop Trash) |
+| **Linux** | `arm64` (AArch64) | Go 1.27.3+ | Fully Supported (FreeDesktop Trash) |
+| **macOS** | `amd64` (Intel) | Go 1.27.3+ | Fully Supported (Native Trash) |
+| **macOS** | `arm64` (Apple Silicon) | Go 1.27.3+ | Fully Supported (Native Trash) |
 
 > [!NOTE]
 > Windows is not supported. Finder **Put Back** metadata is not preserved on macOS; use `bearm restore` as the authoritative recovery mechanism.
@@ -114,7 +114,7 @@ Bearm is distributed directly via Go tooling and source builds. No third-party p
 
 ### Method 1: via `go install` (Recommended)
 
-If you already have **Go 1.24+** installed, install the latest release with:
+If you already have **Go 1.27.3+** installed, install the latest release with:
 
 ```bash
 go install github.com/Diaszano/bearm/cmd/bearm@latest

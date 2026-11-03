@@ -8,7 +8,7 @@ This guide covers installing, building, and configuring **Bearm** on supported U
 
 - **Operating Systems**: Linux (kernel 3.x+), macOS (11+ Big Sur, Monterey, Ventura, Sonoma, Sequoia).
 - **Architectures**: `amd64` (x86_64), `arm64` (Apple Silicon & 64-bit ARM Linux).
-- **Go Version**: **Go 1.24.0 or newer** (required to compile from source or install via `go install`).
+- **Go Version**: **Go 1.27.3 or newer** (required to compile from source or install via `go install`).
 
 > [!NOTE]
 > Windows is not supported. Bearm relies on Unix filesystem semantics, FreeDesktop Trash specifications (Linux), and Apple macOS Trash directories.
@@ -21,7 +21,7 @@ Bearm is distributed exclusively via **`go install`** and **direct source compil
 
 ### Method 1: Install via `go install` (Recommended)
 
-If you have Go 1.24+ installed on your machine, install the latest version with a single command:
+If you have Go 1.27.3+ installed on your machine, install the latest version with a single command:
 
 ```bash
 go install github.com/Diaszano/bearm/cmd/bearm@latest
@@ -107,7 +107,7 @@ bearm version
 
 Expected output format:
 ```text
-bearm dev (commit: none, built at: unknown, go1.24.0, linux/amd64)
+bearm dev (commit: none, built at: unknown, go1.27.3, linux/amd64)
 ```
 
 You can also check the configuration paths recognized by Bearm:

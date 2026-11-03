@@ -62,7 +62,7 @@ trash cannot be permanently deleted through compatibility mode.
 
 ## Differential Test Host
 
-Linux CI runs the suite on GitHub-hosted `ubuntu-latest` with both Go 1.24 and
+Linux CI runs the suite on GitHub-hosted `ubuntu-latest` with both Go 1.27.3 and
 stable Go. Each run resolves the installed host `rm` and selects the GNU
 profile; tests compare exit status, streams where stable, and normalized
 source-tree outcomes. The runner image supplies the exact GNU coreutils

@@ -2,13 +2,14 @@
 
 ## Prerequisites
 
-- Go 1.24 or newer;
+- Go 1.27.3 or newer;
 - Git;
 - `make`;
 - a Linux or macOS test environment.
 
-GoReleaser, `golangci-lint`, and `govulncheck` are recommended for release and
-security validation.
+Go tools are pinned in `tools/go.mod` and run through the project Makefile and
+acceptance script; a global installation is not required. The `go` command
+automatically selects the required toolchain when needed.
 
 ## Workflow
 
