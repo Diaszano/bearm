@@ -18,11 +18,9 @@ if [ ! -f "$VALIDATOR" ]; then
     exit 1
 fi
 
-# Check if base commit exists
-if ! git rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then
-    # In shallow clones or single branch checkouts, verify the HEAD commit only
-    echo "Base ref '$BASE_REF' not found. Verifying HEAD commit only..."
-    COMMITS=$(git rev-parse HEAD)
+if ! git merge-base --is-ancestor "$BASE_REF" "$HEAD_REF" 2>/dev/null; then
+    echo "Base ref '$BASE_REF' is not an ancestor of '$HEAD_REF'. Verifying HEAD commit only..."
+    COMMITS=$(git rev-parse "$HEAD_REF")
 else
     COMMITS=$(git rev-list "$BASE_REF..$HEAD_REF")
 fi
