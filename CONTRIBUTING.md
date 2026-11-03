@@ -63,7 +63,8 @@ chore: update dependencies
 
 Do not add AI attribution trailers. Source code, identifiers, and comments are
 written in English. English is the source language for public documentation;
-provide a matching Brazilian Portuguese (`.pt-BR.md`) version when updating it.
+maintain Brazilian Portuguese (`.pt-BR.md`) versions of user and security
+guides when updating them.
 
 ## Compatibility Changes
 

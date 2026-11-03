@@ -15,4 +15,4 @@ Versioning.
 - Append-only operation journal.
 - List, restore, purge, doctor, and config commands.
 - Secure TOML configuration and protected path patterns.
-- Brazilian Portuguese versions of all public documentation.
+- Brazilian Portuguese translations for user and security guides.
