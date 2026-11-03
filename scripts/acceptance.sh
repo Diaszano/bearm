@@ -9,19 +9,11 @@ go test -race ./...
 go test ./test/compatibility -v
 go test ./test/integration -v
 
-if command -v golangci-lint >/dev/null 2>&1; then
-  golangci-lint run ./...
+go tool -modfile=tools/go.mod golangci-lint run ./...
+go tool -modfile=tools/go.mod govulncheck ./...
+go tool -modfile=tools/go.mod goreleaser check
+goreleaser_skips="sign"
+if ! command -v syft >/dev/null 2>&1; then
+  goreleaser_skips="${goreleaser_skips},sbom"
 fi
-
-if command -v govulncheck >/dev/null 2>&1; then
-  govulncheck ./...
-fi
-
-if command -v goreleaser >/dev/null 2>&1; then
-  goreleaser check
-  goreleaser_skips="sign"
-  if ! command -v syft >/dev/null 2>&1; then
-    goreleaser_skips="${goreleaser_skips},sbom"
-  fi
-  goreleaser release --snapshot --clean --skip="${goreleaser_skips}"
-fi
+go tool -modfile=tools/go.mod goreleaser release --snapshot --clean --skip="${goreleaser_skips}"
